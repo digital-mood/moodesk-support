@@ -1,0 +1,106 @@
+name: Bug report
+description: Report something in mooDesk that is not working as expected.
+title: "[Bug]: "
+labels: ["bug", "needs-info"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+        > **This issue will be public.** Do **not** include passwords, API keys, access tokens,
+        > personal data, real user names or emails, internal hostnames or database dumps.
+        > If you paste logs, sanitize them first (remove tokens, emails, hostnames and IDs).
+
+  - type: input
+    id: moodesk-version
+    attributes:
+      label: mooDesk version
+      placeholder: "e.g. 1.2.0"
+    validations:
+      required: true
+
+  - type: input
+    id: moodle-version
+    attributes:
+      label: Moodle version
+      placeholder: "e.g. 4.5"
+    validations:
+      required: true
+
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      placeholder: "e.g. 8.2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: database
+    attributes:
+      label: Database
+      options:
+        - MySQL
+        - MariaDB
+        - PostgreSQL
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      description: Name and version, if the issue is related to the user interface.
+      placeholder: "e.g. Chrome 129, Firefox 130, Safari 18"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What happens instead. Include sanitized error messages if any.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, sanitized logs or anything else that helps. Remove any sensitive data first.
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have checked the documentation and existing issues, and this bug has not been reported yet.
+          required: true
+        - label: This report contains no credentials, personal data or other sensitive information.
+          required: true
