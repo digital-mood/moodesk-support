@@ -2,15 +2,19 @@ import { defineConfig } from 'vitepress'
 
 const repo = 'https://github.com/digital-mood/moodesk-support'
 
+// Site base path. Kept in a constant so head assets resolve under it too.
+const base = '/'
+
 export default defineConfig({
   title: 'mooDesk',
   description: 'Public documentation and support portal for mooDesk, by digitalMood.',
   lang: 'en-US',
-  base: '/',
+  base,
   cleanUrls: true,
   lastUpdated: true,
 
   head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}favicon.svg` }],
     ['meta', { name: 'theme-color', content: '#3c3c43' }]
   ],
 

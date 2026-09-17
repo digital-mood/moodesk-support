@@ -476,7 +476,7 @@ membership applies), `set_department` (department id), `add_note` (text of an in
  {"type": "add_note", "value": "Auto-escalated: urgent and unassigned"}]
 ```
 
-Status codes are `0` new, `1` open, `2` pending, `4` resolved, `5` closed, `6` in progress;
+Status codes are `1` open, `2` pending, `4` resolved, `5` closed, `6` in progress;
 priorities `0` low, `1` normal, `2` high, `3` urgent.
 
 How rules run:
