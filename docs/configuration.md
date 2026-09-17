@@ -164,7 +164,7 @@ header alone.
 | Reply authentication | `email_reply_auth_mode` | *Legacy* (deprecated, transition only) · *Prefer token* (accepts replies with and without a token and counts them) · *Require token* (refuses a reply without a valid token) | **Require token** on a fresh install; **Prefer token** on a site upgraded from an earlier version |
 | Reply token lifetime | `email_reply_token_maxage` | How long a token stays valid | 90 days |
 
-Two rules to know before touching this block:
+Three rules to know before touching this block:
 
 - *Require token* cannot be selected until a check sent to the tokenised address has come
   back through ingestion for the address configured right now. Changing the address withdraws
@@ -172,6 +172,11 @@ Two rules to know before touching this block:
 - A **fresh install** that enables email ingestion without configuring the reply address
   refuses replies by mail until the address is set and verified. New tickets by mail are not
   affected. System Health says so.
+- *Legacy* is not a way to keep replies working without tokens. Without a token, mooDesk can
+  only thread a reply through `In-Reply-To` / `References` to mail it has **received** for
+  that ticket — it does not record the Message-ID of the notifications it sends — so a reply
+  to a notification is not reliably matched to its ticket in this mode. Keep the token
+  mechanism on; see [Integrations → Replying by email](./integrations#replying-by-email).
 
 ### Inbound sender authentication <Badge type="tip" text="Pro" />
 
