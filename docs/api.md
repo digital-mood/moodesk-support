@@ -15,9 +15,9 @@ separate URL scheme.
 | **Edition** | Enterprise. On Starter and Pro every call is refused with `featurenotavailable` before any work happens. |
 | **Transport** | Moodle's REST server, `/webservice/rest/server.php`, JSON or XML |
 | **Service** | `moodesk_api` (shown as *mooDesk API* in Moodle's web services administration) |
-| **Authentication** | A Moodle web service token bound to `moodesk_api`, issued from mooDesk's **API tokens** page |
+| **Authentication** | A Moodle web service token bound to `moodesk_api`, issued from mooDesk's **API tokens** page. Tokens from any other source, and username/password access, are refused ([details](#tokens-not-issued-by-moodesk)). |
 | **Functions** | 21 — 6 for tickets, 2 for merges, 5 for webhooks, 8 for the knowledge base |
-| **Authorisation** | Edition → rate limit → the owner's Moodle capabilities → the token's scopes |
+| **Authorisation** | Edition → token policy → rate limit → the owner's Moodle capabilities → the token's scopes |
 | **Rate limit** | Per token, 300 requests per 60 seconds by default, HTTP 429 when exceeded |
 
 The settings that govern tokens and the rate limit are in
@@ -121,21 +121,23 @@ grants anything the owner's capabilities do not already allow.
 A call from a token that lacks the function's scope is refused with `api_scope_denied`, after
 the capability check has already passed.
 
-### Tokens created in Moodle's own token administration
+### Tokens not issued by mooDesk
 
-Moodle's *Site administration → Server → Web services → Manage tokens* can also create a token
-for the `moodesk_api` service. Such a token has no mooDesk companion record, and the two paths
-are not equivalent:
+Since 2.34.0, the API only accepts tokens issued from mooDesk's **API tokens** page. Every other
+web service call is refused with `api_token_unmanaged` before the function does anything:
 
-- It carries **no scopes**, so no scope restriction applies to it — the owner's capabilities
-  alone decide what it can do.
-- It **is rate-limited** like any other token: the limit is counted per Moodle token, whether or
-  not mooDesk issued it.
-- It does not appear on mooDesk's API tokens page and cannot be revoked from there.
+- A token created in Moodle's *Site administration → Server → Web services → Manage tokens*,
+  even one bound to the `moodesk_api` service. Such a token has no mooDesk record and no
+  scopes, so mooDesk does not accept it.
+- A call through Moodle's username/password entry point, `/webservice/rest/simpleserver.php`.
 
-This is not the supported way to give an integration access. Issue tokens from mooDesk's page,
-and use Moodle's token administration to review or delete them (the page links to it as
-*External services admin*).
+mooDesk's own pages are not affected: they call the server with the signed-in user's browser
+session, not with a web service token.
+
+Moodle's token administration is still useful to review or delete tokens (the API tokens page
+links to it as *External services admin*), but not to give an integration access. To move an
+integration that used one of these methods, see the
+upgrade notes of [2.34.0 in the changelog](./changelog#_2-34-0-—-2026-09-30).
 
 ## Making a request
 
@@ -187,20 +189,22 @@ category and department administration.
 
 ## How a call is authorised
 
-Every function runs the same four checks, server-side, in this order. The first failure ends
+Every function runs the same five checks, server-side, in this order. The first failure ends
 the call.
 
 | # | Gate | Refused with |
 |---|---|---|
 | 1 | **Edition** — the site is Enterprise (`api_access`) | `featurenotavailable` |
-| 2 | **Rate limit** — the token is within its request budget | `api_rate_limited`, HTTP 429 |
-| 3 | **Capability** — the token's owner holds the function's capability (table per function below). Some functions accept either of two capabilities. | `nopermissions` (a `required_capability_exception`) |
-| 4 | **Scope** — the token carries the function's scope | `api_scope_denied` |
+| 2 | **Token policy** — the call carries a token issued from mooDesk's API tokens page ([details](#tokens-not-issued-by-moodesk)) | `api_token_unmanaged` |
+| 3 | **Rate limit** — the token is within its request budget | `api_rate_limited`, HTTP 429 |
+| 4 | **Capability** — the token's owner holds the function's capability (table per function below). Some functions accept either of two capabilities. | `nopermissions` (a `required_capability_exception`) |
+| 5 | **Scope** — the token carries the function's scope | `api_scope_denied` |
 
 The order is deliberate. A non-Enterprise site has no API to protect, so it learns nothing
-about capabilities; an over-budget caller is refused before the server does any work on its
-behalf; and the capability check runs before the scope check because scopes only narrow —
-capabilities remain authoritative.
+about capabilities; a call without a mooDesk token is refused before it is counted or does any
+work; an over-budget caller is refused before the server does any work on its behalf; and the
+capability check runs before the scope check because scopes only narrow — capabilities remain
+authoritative.
 
 The capability is the **same** one the web interface checks for the equivalent action, and the
 service layer applies the same row-level rules afterwards: a requester's token sees only that
@@ -275,6 +279,7 @@ Moodle answers them with **HTTP 200**. Check the body, not the status code:
 | `accessexception` | Moodle | Web services disabled, token expired, IP-restricted, or the owner lacks `webservice/rest:use` — the message says which |
 | `invalidparameter` | Moodle | A parameter is missing, has the wrong type, or is out of range |
 | `featurenotavailable` | mooDesk | The site is not Enterprise |
+| `api_token_unmanaged` | mooDesk | The call does not use a token issued from mooDesk's API tokens page — see [Tokens not issued by mooDesk](#tokens-not-issued-by-moodesk) |
 | `api_rate_limited` | mooDesk | Over the token's budget — the one error sent as HTTP 429 |
 | `nopermissions` | Moodle / mooDesk | The owner lacks the function's capability, or may not see the row (`required_capability_exception`) |
 | `api_scope_denied` | mooDesk | The token lacks the function's scope |
@@ -288,7 +293,7 @@ Moodle answers them with **HTTP 200**. Check the body, not the status code:
 
 All functions are called as `local_moodesk_<name>`. *Capability* is what the token's owner must
 hold; where two are listed, either is enough. Every function additionally passes the edition
-gate and the rate limit.
+gate, the token policy and the rate limit.
 
 ### Tickets
 
@@ -730,4 +735,4 @@ workaround inside the API.
 
 ---
 
-*Verified against mooDesk 2.31.0.*
+*Verified against mooDesk 2.31.0; token policy verified against 2.34.0.*
