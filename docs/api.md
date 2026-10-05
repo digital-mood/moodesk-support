@@ -286,7 +286,7 @@ Moodle answers them with **HTTP 200**. Check the body, not the status code:
 | `ticketnotfound`, `webhook_not_found`, `kb_article_notfound`, `merge_audit_not_found` | mooDesk | Unknown ID |
 | `invalidstatustransition`, `invalidassignee`, `assigneenotindepartment`, `invalidpriority`, `nocategoryavailable`, `ticket_locked_by_merge` | mooDesk | Ticket rules, listed with the function below |
 | `merge_*`, `revert_merge_*` | mooDesk | Merge rules, listed under [Merges](#merges) |
-| `invalidurl`, `webhook_events_required`, `webhook_invalid_event` | mooDesk | Webhook validation |
+| `invalidurl`, `webhook_events_required`, `webhook_invalid_event`, `webhook_secret_too_short`, `webhook_secret_too_long` | mooDesk | Webhook validation |
 | `kb_*` | mooDesk | Knowledge base rules, listed under [Knowledge base](#knowledge-base) |
 
 ## Reference
@@ -493,7 +493,7 @@ schedule and the delivery log are in [Integrations → Webhooks](./integrations#
 event names are the same six listed there.
 
 **Webhook summary** — returned by every function except `delete_webhook`. The signing
-**secret is write-only and never returned**:
+**secret is never returned**, with one exception: the `create_webhook` response (below).
 
 | Field | Type | Notes |
 |---|---|---|
@@ -525,15 +525,27 @@ Error: `webhook_not_found`.
 | `name` | string | — | Required |
 | `url` | string | — | Required; must be a valid URL. Use HTTPS — see [Integrations](./integrations#webhooks) for what the endpoint must accept |
 | `events` | string[] | — | At least one of the six event types |
-| `secret` | string | `""` | Write-only |
+| `secret` | string | `""` | Write-only. At least 32 characters (at most 255) when supplied |
 | `active` | int | 1 | `1` active, `0` paused |
 
-Both return the summary. `update_webhook` is a **full replacement**, not a patch: send every
-field. In particular, **resend `secret` to keep it** — an omitted or empty secret on update
-clears it, and deliveries go out unsigned from then on.
+**`create_webhook`** — leave `secret` empty or omit it and mooDesk generates one. The response
+is the summary **plus `secret`**, the stored secret, supplied or generated. This is the only
+time the API returns it: store it on the receiving end straight away.
+
+**`update_webhook`** — returns the summary, and is otherwise a full replacement: send `name`,
+`url`, `events` and `active`. An empty or omitted `secret` **keeps the current one**; a new
+value replaces it. A secret cannot be removed. To replace a secret with a generated one, use
+**Rotate secret** on the webhook's edit page in mooDesk.
+
+::: info Changed in 2.33.0
+Before 2.33.0, `create_webhook` accepted a secret of any length or none at all, and an empty
+`secret` on `update_webhook` cleared it. A caller that relied on that must now either send a
+secret of at least 32 characters or read the generated one from the `create_webhook` response.
+:::
 
 Errors: `missingparam` (empty name), `invalidurl`, `webhook_events_required`,
-`webhook_invalid_event`, `webhook_not_found`.
+`webhook_invalid_event`, `webhook_secret_too_short`, `webhook_secret_too_long`,
+`webhook_not_found`.
 
 ### Knowledge base
 
@@ -735,4 +747,4 @@ workaround inside the API.
 
 ---
 
-*Verified against mooDesk 2.31.0; token policy verified against 2.34.0.*
+*Verified against mooDesk 2.37.0.*
