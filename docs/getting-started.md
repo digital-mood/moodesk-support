@@ -274,14 +274,14 @@ One published article, and the suggestion working on the New ticket form.
 Run one ticket through the whole lifecycle, using two accounts.
 
 **As a requester** (any user): **mooDesk → New ticket** — subject *Smoke test*, category
-*General*, a line of text, submit. The ticket is created as *New* with *Normal* priority.
+*General*, a line of text, submit. The ticket is created as *Open* with *Normal* priority.
 Agents receive a notification if *agents on new ticket* is on.
 
 **As an agent:**
 
 1. Open **mooDesk → Tickets**. The ticket is listed under *Unassigned*. Open it — it opens in a
    drawer over the list; use *Open full page* for the standalone view.
-2. Assign it to yourself and set the status to *Open*.
+2. Assign it to yourself and set the status to *In progress*.
 3. Post a **Public Reply** ("Looking into it"), then an **Internal Note** ("smoke check —
    ignore").
 4. Set the status to *Resolved*.
