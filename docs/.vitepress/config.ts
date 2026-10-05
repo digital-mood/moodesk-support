@@ -85,7 +85,12 @@ export default defineConfig({
     },
 
     footer: {
-      message: 'mooDesk is a product by digitalMood.',
+      // The two trademark lines are a permanent condition on every public surface:
+      // keep them verbatim, with ® (never ™).
+      message:
+        'mooDesk is a product by digitalMood.<br>' +
+        'mooDesk is an independent third-party plugin and is not affiliated with or endorsed by Moodle HQ.<br>' +
+        'Moodle® is a registered trademark of Moodle Pty Ltd.',
       copyright: 'Copyright © digitalMood'
     }
   }
