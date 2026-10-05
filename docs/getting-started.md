@@ -118,8 +118,9 @@ staging copy.
    edition* should show the edition you licensed, and the *Agents* row shows
    `active / limit` for that edition.
 
-If the key is malformed, expired, revoked, signed for another site, or otherwise refused, the
-License page says which. The site keeps running as Starter and nothing is lost — contact
+If the key is malformed, expired, revoked, signed for another site, signed with a key this
+version no longer trusts (any licence issued before 2.37.0 shows `untrusted_key`), or otherwise
+refused, the License page says which. The site keeps running as Starter and nothing is lost — contact
 digitalMood for a re-issue. A note reading *License claim ignored: N* beside the Agents row
 means the key carries an agent number that is not part of the edition's contract; the
 edition's limit is what applies.
@@ -229,17 +230,19 @@ mail opens a ticket, and a reply to a mooDesk notification lands on its ticket.
 
 1. Create a dedicated IMAP mailbox with a **least-privilege account used by nothing else**.
    The password is stored as a Moodle plugin setting, like every other plugin setting.
-2. In the plugin settings, section **Email ingestion**: enable it, then enter host, port, SSL,
-   user, password and folder.
+2. In the plugin settings, section **Email ingestion**: enable it, then enter host, port,
+   connection security, user and folder, and choose how the mailbox signs in: its password, or
+   OAuth 2.0 for Gmail / Google Workspace and Microsoft 365.
 3. Leave the **Reply authentication** and **Sender authentication** sections at their
    defaults for now. [Integrations](./integrations) explains when and how to tighten them;
    System Health shows whether your mail provider gives mooDesk enough information to do so.
 4. Run the `process_incoming_email` task once from **Site administration → Server → Tasks →
    Scheduled tasks**, and send a test mail to the mailbox.
 
-::: warning Microsoft 365 / Exchange Online mailboxes are not supported
-mooDesk connects over IMAP with a username and password. Exchange Online no longer accepts
-that, and mooDesk does not implement OAuth2. Use Google Workspace or an IMAP server of your own.
+::: warning Microsoft 365 / Exchange Online mailboxes need OAuth 2.0
+Exchange Online no longer accepts passwords over IMAP. Connect a Microsoft 365 mailbox with
+OAuth 2.0, through a Moodle OAuth 2 service set aside for mail, on Moodle 4.5.5, 5.0.1 or
+later. The steps are in [Integrations → Microsoft 365](./integrations#microsoft-365-exchange-online).
 :::
 
 ::: tip You have
@@ -309,6 +312,8 @@ Open **mooDesk → System health** (`/local/moodesk/health.php`, capability
   want to see.
 - **Inbound mail retention** shows when the retention sweep last ran and the two policies in
   force.
+- **Mailbox connection**, once email ingestion is set up, names the mail server, its
+  encryption and how the mailbox signs in.
 
 Come back here first whenever something feels off.
 
@@ -330,4 +335,4 @@ A green health page — and the habit of opening it.
 
 ---
 
-*Verified against mooDesk 2.30.0.*
+*Verified against mooDesk 2.37.0.*

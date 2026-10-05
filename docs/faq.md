@@ -54,9 +54,14 @@ into **Site administration → Plugins → Local plugins → mooDesk → Licence
 revalidates immediately — [Configuration → License](./configuration#license).
 
 **I pasted the key and nothing unlocked.**
-The License page names the reason — *malformed*, *forged*, *expired*, *revoked*,
-*site_mismatch* — and each is explained in [Configuration → License](./configuration#license).
+The License page names the reason — *malformed*, *forged*, *untrusted_key*, *expired*,
+*revoked*, *site_mismatch* — and each is explained in [Configuration → License](./configuration#license).
 The site keeps running as Starter in the meantime and nothing is lost.
+
+**After upgrading to 2.37.0 the site runs as Starter.**
+2.37.0 replaced the licence signing key, so a licence issued before it shows *untrusted_key*.
+Ask digitalMood for a re-issued licence and paste it under *Licence key*. Nothing is deleted
+in the meantime — [Installation → Upgrading](./installation#upgrading).
 
 **Can I use my production licence on a staging copy?**
 No. The key is bound to one site URL; on any other it is refused as *site_mismatch* and the
@@ -133,7 +138,7 @@ closed it. Set the value to `0` to stop it — [Configuration → Automation](./
 
 **Is there an audit trail of changes to a ticket?**
 Yes: every change is written to the ticket's history and included in the user's privacy
-export. The history is **not shown on the ticket page** in 2.31.0.
+export. The history is **not shown on the ticket page** in 2.37.0.
 
 **Can tickets be merged?**
 On Enterprise. A duplicate is merged into a target and becomes read-only; the merge can be
@@ -148,9 +153,10 @@ Everything needed, from the mailbox to the reply address, is in
 [Integrations → Email ingestion](./integrations#email-ingestion).
 
 **Does it work with Gmail and Microsoft 365?**
-Gmail and Google Workspace: yes, with an **app password**. Microsoft 365 / Exchange Online:
-**not in 2.31.0** — mooDesk authenticates with IMAP `LOGIN` only, and Microsoft requires
-OAuth2. See [Integrations → Provider notes](./integrations#provider-notes).
+Gmail and Google Workspace: yes, with **OAuth 2.0** or an **app password**. Microsoft 365 /
+Exchange Online: yes since 2.37.0, with **OAuth 2.0** only, on Moodle 4.5.5, 5.0.1 or later.
+Microsoft 365 business-tenant features (shared mailboxes, admin consent, Conditional Access)
+are not yet validated. See [Integrations → Provider notes](./integrations#provider-notes).
 
 **Does the server need the PHP `imap` extension?**
 No. mooDesk speaks IMAP over TLS sockets itself; nothing is installed on the server.
@@ -177,7 +183,7 @@ the window the same Message-ID, or the same sender and subject, is dropped as a 
 
 **Can a rule fire twice on the same ticket?**
 No. Each rule fires **at most once per ticket**, whatever the trigger, and the outcome is
-logged. A rule with the `time_elapsed` trigger never fires in 2.31.0: it can be saved but is
+logged. A rule with the `time_elapsed` trigger never fires in 2.37.0: it can be saved but is
 not evaluated — [Configuration → Automations](./configuration#automations).
 
 **What fires the `ticket.updated` webhook?**
@@ -189,7 +195,7 @@ notes and assignment changes fire nothing. All six events and their payloads are
 **When does an API token expire?**
 `api_token_lifetime_days` after it is issued — 365 by default, `0` for never — fixed at
 issue time. Each user may hold up to five, issued from **mooDesk → API tokens** only. Tokens,
-scopes and the four checks every call passes are on [API](./api).
+scopes and the checks every call passes are on [API](./api).
 
 **Why does my valid token get *You are not allowed to use the rest protocol*?**
 Its owner lacks `webservice/rest:use`, a Moodle capability no role holds by default —
@@ -250,7 +256,9 @@ Three things, each disclosed and each under your control:
 - **webhook deliveries** (Enterprise), which carry ticket data to the URLs an administrator
   entered;
 - the **IMAP connection** to the mailbox an administrator configured (Pro), where mooDesk reads
-  mail and, for refusals, sends bounces through Moodle's outgoing mail.
+  mail and, for refusals, sends bounces through Moodle's outgoing mail. A mailbox signed in
+  with OAuth 2.0 also has Moodle's OAuth 2 service obtain and renew its token from Google or
+  Microsoft.
 
 Nothing else. The detail is in [Installation → Network and privacy](./installation#network-and-privacy).
 
@@ -282,4 +290,4 @@ Contact digitalMood for licensing and support information.
 
 ---
 
-*Verified against mooDesk 2.31.0.*
+*Verified against mooDesk 2.37.0.*
