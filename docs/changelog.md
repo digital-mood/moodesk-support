@@ -17,122 +17,153 @@ The public changelog starts at **2.34.0**. Earlier releases are not listed here.
 
 <!-- Add new releases directly below this line, newest first, with the same headings. -->
 
-## 2.37.0 — 2026-10-03
-
-::: danger Before you upgrade: get a re-issued licence
-2.37.0 replaced the licence signing key. **A Pro or Enterprise licence issued before 2.37.0
-stops working on upgrade**: *mooDesk → License* shows **`untrusted_key`** and the site runs as
-Starter until you paste a re-issued licence. Ask digitalMood for it **before** upgrading. See
-[Upgrade notes](#upgrade-notes-2-37-0) below.
-:::
-
-### Security
-
-- **The licence signing key was replaced.** This version trusts only the new key. A licence
-  signed with the previous key shows **`untrusted_key`** on *mooDesk → License*, and the site
-  runs as Starter until a re-issued licence is pasted. Nothing is deleted in the meantime: Pro
-  and Enterprise data stays in the database and comes back with the new licence.
-- **The licence revocation list moved to `/crl/v2/`.** The default *Revocation list URL* is
-  now `https://licenses.moodesk.io/crl/v2/revocations.json`, and only a list signed with a
-  trusted key is accepted. The upgrade moves a site still on the previous default URL to the
-  new one and discards the list it held. A URL you set yourself is left unchanged.
-
-### Added
-
-- **Email ingestion can sign in with OAuth 2.0** <Badge type="tip" text="Pro" />, for Gmail /
-  Google Workspace and Microsoft 365. *Authentication* now offers **Password** or **OAuth
-  2.0**. With OAuth 2.0 the mailbox signs in with an access token from a Moodle OAuth 2 service
-  (*Site administration → Server → OAuth 2 services*), chosen as *OAuth 2 service*. mooDesk
-  adds the mail scope to that service's system account and **stores no token**: Moodle keeps
-  and renews it.
-- **Microsoft 365 mailboxes can be connected** <Badge type="tip" text="Pro" />. Microsoft no
-  longer accepts passwords over IMAP, so OAuth 2.0 is the only way. Microsoft 365 needs a
-  Microsoft OAuth 2 service set aside for mail, separate from the one users log in with, and
-  **Moodle 4.5.5, 5.0.1 or later**. mooDesk detects an older Moodle and says so on the
-  settings page. Validated against a Microsoft (outlook.com) account. What only a Microsoft 365
-  business tenant has (shared mailboxes, admin consent, single-tenant endpoints, tenant
-  policies such as Conditional Access, administrative revocation) is **not yet validated**.
-  See [Integrations → Email ingestion](./integrations#email-ingestion).
-- **Four System Health incidents for OAuth 2.0 sign-in failures**, one per remedy:
-  `email_ingestion.oauth2.not_ready` (the configuration cannot work; the settings page lists
-  why), `email_ingestion.oauth2.token_refresh_failed` (connect the system account again),
-  `email_ingestion.oauth2.blocked_by_policy` (the tenant's administrator must allow the app)
-  and `email_ingestion.oauth2.auth_rejected` (the mail server refused a freshly renewed token).
-  *System health* also shows how the mailbox signs in and, with OAuth 2.0, the service and
-  whether it is ready.
+## 2.38.0 — 2026-10-06
 
 ### Changed
 
-- **Email ingestion reads the mailbox by position, not by flag** <Badge type="tip" text="Pro" />.
-  mooDesk now keeps a cursor per folder and reads what arrived since the last poll. Someone
-  reading, flagging or un-flagging mail in webmail no longer hides it from mooDesk. Processed
-  messages are still flagged, so webmail shows what was handled, but those flags are never
-  read back.
-- **A message that keeps failing no longer holds up the mailbox.** A transient error stops the
-  poll at that message, so an outage skips nothing. After three polls in a row, the message
-  moves to a retry list of up to 20 messages, retried first on every poll, and the poll moves
-  past it. Past 20, the oldest is abandoned with an `email_ingestion.cursor.retry_abandoned`
-  incident.
+- **MySQL is no longer listed as a supported database.** mooDesk's supported databases are
+  MariaDB and PostgreSQL, the ones every release is tested on. The tested versions listed in
+  the requirements now match what is tested: PHP 8.2 to 8.4, MariaDB 10.11 and PostgreSQL 16.
+  The minimum versions are unchanged: PHP 8.1, MariaDB 10.6.7 and PostgreSQL 13.
 
 ### Fixed
 
-- **The advice for an oversized message was wrong.** The setting help and the
-  `email_ingestion.message.oversized` incident said to clear the processed flag on the message.
-  That does not work, because its Message-ID is on record. They now say what does: ask the
-  sender to send it again within *Maximum message size*.
+- **A badly formatted date in a custom field no longer stops the ticket from opening.** Any text
+  sent for a date field was stored as typed, and on PHP 8.3 or later the ticket page failed to
+  open for everyone. Only real dates (`YYYY-MM-DD`) are stored now: invalid new values are saved
+  as empty. A value saved before this release is shown as it was typed instead of breaking the
+  page.
+- **SLA times roll over to the next unit.** Remaining and overdue times could read *7h 60m*,
+  *60m* or *24h*. They now read *8h*, *1h* and *1d*.
+- **Saved view names show as typed.** A view called `A&B` showed as `A&amp;B` in the ticket
+  list.
+- **The licence status names the company correctly** ("digitalMood") when a licence is signed
+  with a key that is not trusted.
 
-### Upgrade notes {#upgrade-notes-2-37-0}
+## 2.37.0 — 2026-10-03
 
-::: warning Licences issued before 2.37.0 must be re-issued
-A licence issued before this version stops working on upgrade. *mooDesk → License* shows
-**`untrusted_key`** and the site runs as Starter until a licence re-issued for the new key is
-pasted under *Licence key*. Ask digitalMood for the re-issued licence before upgrading, and
-paste it right after. See [Installation → Upgrading](./installation#upgrading).
+::: danger Before you upgrade: replace a licence signed with the retired key
+2.37.0 replaced the licence signing key. See the [upgrade notes](#upgrade-notes-2-37-0)
+before upgrading a site that runs Pro or Enterprise.
 :::
 
-- **Nothing changes for a mailbox signed in with a password.** *Authentication* defaults to
-  **Password**, and no OAuth 2 service is touched until you choose one for the mailbox. To move
-  a mailbox to OAuth 2.0, choose the service and save **before** connecting its system
-  account, or connect it again afterwards.
-- **The first poll after upgrading re-scans each folder once.** It reads only the last 14 days,
-  so older mail that was never ingested does not become tickets now. Messages already ingested
-  are recognised by Message-ID (`already_processed`), and a message already in the folder
-  without a Message-ID is left alone (`rescan_skipped_no_message_id`). The per-run cap still
-  applies, and the task log says when the re-scan is complete. The same re-scan happens later
-  whenever the server renumbers a folder, recorded as an
-  `email_ingestion.cursor.uidvalidity_changed` incident.
+### Added
 
-## 2.36.0 — 2026-10-01
+- **Email ingestion can sign in with OAuth 2.0.** For Gmail, Google Workspace and Microsoft 365,
+  the new *Authentication* setting offers **Password** or **OAuth 2.0**. With OAuth 2.0, mooDesk
+  signs in to the mailbox with an access token from one of Moodle's OAuth 2 services
+  (*Site administration → Server → OAuth 2 services*), chosen under *OAuth 2 service*. mooDesk
+  stores no token: Moodle keeps and renews it. Microsoft mailboxes, which do not accept a
+  password over IMAP, can now be connected.
+- **Microsoft 365 uses its own OAuth 2 service for mail.** The service chosen for a Microsoft
+  mailbox must be set aside for mail, not the one users log in with: *Show on login page* set to
+  **SMTP with XOAUTH2 only**, and the offline scopes
+  `openid profile email offline_access https://outlook.office.com/SMTP.Send`, without
+  `user.read`. mooDesk refuses any other Microsoft setup and leaves the login service untouched.
+  Moodle requests the `SMTP.Send` scope for that service, but mooDesk only reads the mailbox and
+  never sends mail through it. Microsoft 365 over OAuth 2.0 needs **Moodle 4.5.5, 5.0.1 or
+  later**. Microsoft OAuth 2.0 sign-in has been validated with a personal outlook.com account.
+  Microsoft 365 business tenant configurations, including shared mailboxes, admin consent,
+  tenant-specific endpoints, Conditional Access and administrative revocation, remain
+  unvalidated.
+- **OAuth 2.0 failures are reported by what fixes them.** Four incidents tell them apart: the
+  configuration cannot work (`email_ingestion.oauth2.not_ready`, with the reasons listed on the
+  settings page), the system account has to be connected again
+  (`email_ingestion.oauth2.token_refresh_failed`), the organisation's administrator blocks the
+  app (`email_ingestion.oauth2.blocked_by_policy`), or the server refused a freshly renewed
+  token (`email_ingestion.oauth2.auth_rejected`). A token the server refuses is renewed once
+  before anything is reported. *System health* shows how the mailbox signs in and, with OAuth
+  2.0, the service and whether it is ready.
+
+### Changed
+
+- **Reading the mailbox no longer hides mail from mooDesk.** mooDesk used to look for messages
+  it had not marked as processed, or, on servers that do not allow that mark, for unread ones,
+  so a person reading the mailbox could hide a message from mooDesk for good. mooDesk now keeps
+  its own position in each folder and fetches whatever arrived after it. It still marks handled
+  messages, so webmail shows what mooDesk took in.
+- **A message that keeps failing no longer blocks the mailbox.** After failing in three polls in
+  a row, a message moves to a retry list of up to 20 messages, which is retried first on every
+  poll while the rest of the mailbox moves on. Beyond 20, the oldest message on the list is
+  given up and the incident `email_ingestion.cursor.retry_abandoned` is raised; a message given
+  up is no longer retried automatically.
+
+### Fixed
+
+- **The advice for an oversized message is correct.** The setting help and the
+  `email_ingestion.message.oversized` incident said to clear the processed flag on the message
+  so it would be taken in. That never worked: they now say to ask the sender to send it again
+  within the size limit.
 
 ### Security
 
-- **STARTTLS for the mailbox** <Badge type="tip" text="Pro" />. The *Use SSL/TLS* setting is
-  replaced by **Connection security**, with three choices: **SSL/TLS**, **STARTTLS** and
-  **None**. STARTTLS connects on the plain port (usually 143) and upgrades to TLS 1.2 or 1.3
-  before signing in. If the server does not offer STARTTLS, the poll fails instead of
-  continuing unencrypted. The certificate is checked against the host name.
-- **An unencrypted mailbox connection is called out.** While email ingestion polls a server
-  with *Connection security* set to *None*, the email ingestion settings show a warning, and
-  *System health* has a *Mailbox connection* section that names the server and marks it *Not
-  encrypted*. It is not an incident, and *None* stays selectable.
-- **A maximum message size for the mailbox.** The new **Maximum message size** setting (10, 25,
-  50 or 100 MB; default 50 MB) bounds what a poll downloads. A larger message is not fetched:
-  its sender and subject are recorded, an `email_ingestion.message.oversized` incident is
-  raised, and the message is marked as processed.
+- **The licence signing key was replaced.** The previous private signing key was exposed and
+  has been retired. This version trusts one new key for licences and for the revocation list
+  (RSA 3072, key ID `moodesk-2026-10`) and no other. A licence signed with the retired key, or
+  without a key ID, shows **`untrusted_key`** on *License status*, and the site runs as Starter
+  until a re-issued licence is pasted.
+- **Every licence and revocation list names its key.** Licences and the revocation list carry
+  the ID of the key that signed them, and each is checked only against the trusted key it
+  names, so a future key change can add a key instead of replacing one.
+- **The revocation list moved to a new address.** It is now read from
+  `https://licenses.moodesk.io/crl/v2/revocations.json` and refused unless it is signed by a
+  trusted key. A site still using the previous default address is moved to the new one by the
+  upgrade, which also discards the list it held.
+
+### Upgrade notes {#upgrade-notes-2-37-0}
+
+::: warning Licences signed with the retired key must be replaced before upgrading
+After the upgrade, a licence signed with the retired key shows **`untrusted_key`** on
+*License status*, and a site whose edition depends on it runs as Starter. Ask digitalMood for
+a re-issued licence before upgrading, and paste it once the upgrade is done. A site running as
+Starter without a licence needs no action.
+:::
+
+- **Mailboxes that sign in with a password keep working as before.** *Authentication* defaults
+  to **Password**, and no OAuth 2 service is used until one is chosen for the mailbox. To move a
+  mailbox to OAuth 2.0, choose the service and save the settings **before** connecting its
+  system account, or connect the account again afterwards.
+- **The first poll after upgrading starts a one-time re-scan of each configured folder.** It
+  may continue across several polls. It reads the last 14 days only, so older mail that was
+  never taken in does not become tickets now. Messages already taken in are recognised and
+  skipped, and a message without a Message-ID that was already in the folder when the re-scan
+  started is left alone. A re-scan also starts if a server renumbers a folder (its
+  `UIDVALIDITY` changes), and that is recorded as the incident
+  `email_ingestion.cursor.uidvalidity_changed`.
+
+## 2.36.0 — 2026-10-01
 
 ### Fixed
 
-- **A failed mailbox poll says why.** The task log and the `email_ingestion.imap.poll_failed`
-  incident used to read *Error occurred* for every IMAP failure. They now name the cause: the
-  connection refused, the certificate rejected, a server without STARTTLS, or the server's
-  answer to a failed login.
+- **A failed mailbox poll says why.** The `email_ingestion.imap.poll_failed` incident and the
+  scheduled task output used to read *Error occurred* for every connection failure. They now
+  state the cause: the connection was refused, the certificate was rejected, the server does
+  not offer STARTTLS, or the server's answer to a failed login.
+
+### Security
+
+- **Email ingestion supports STARTTLS.** The *Use SSL/TLS* setting is replaced by *Connection
+  security*, with three choices: **SSL/TLS**, **STARTTLS** and **None**. STARTTLS connects on
+  the plain IMAP port (usually 143) and upgrades the connection to TLS 1.2 or 1.3 before logging
+  in. If the server does not offer STARTTLS, the connection is refused rather than continued
+  without encryption, and the server's certificate is checked against its host name.
+- **Messages reported above the size limit are skipped.** mooDesk checks the size reported by
+  the server before downloading the message body. A message reported larger than the new
+  *Maximum message size* setting (10, 25, 50 or 100 MB; 50 MB by default) is not fetched: its
+  headers are recorded in the email audit, the incident `email_ingestion.message.oversized` is
+  raised, and the message is marked as processed so subsequent polls skip it.
+- **A mailbox polled without encryption is flagged.** While email ingestion connects with
+  *Connection security* set to **None**, the email ingestion settings show a warning, and
+  *System health* lists the mailbox under *Mailbox connection* as *Not encrypted*. This is
+  shown as configuration, not as an incident, and an unencrypted connection can still be
+  selected.
 
 ### Upgrade notes
 
-- The upgrade carries *Use SSL/TLS* over as the setting it meant: on becomes **SSL/TLS**, off
-  becomes **None**. No mailbox changes how it is reached. A mailbox polled without encryption
-  keeps working and is now flagged. To move a mailbox to STARTTLS, choose it under
-  *Connection security* and set the port your provider gives for it.
+- The upgrade keeps every mailbox connecting the way it did: *Use SSL/TLS* on becomes
+  **SSL/TLS**, and off becomes **None**. A mailbox that was polled without encryption keeps
+  working and now shows the warning described above. To switch a mailbox to STARTTLS, choose
+  **STARTTLS** under *Connection security* and set the port your email provider gives for it.
 
 ## 2.35.0 — 2026-10-01
 
