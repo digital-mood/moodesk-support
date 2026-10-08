@@ -733,7 +733,7 @@ parameters and return values are not a public contract.
 
 ## Not in the API
 
-What an integration might look for and will not find in 2.37.0. None of these has a
+What an integration might look for and will not find in 2.38.1. None of these has a
 workaround inside the API.
 
 | Wanted | Status |
@@ -754,4 +754,4 @@ workaround inside the API.
 
 ---
 
-*Verified against mooDesk 2.37.0.*
+*Verified against mooDesk 2.38.1.*
