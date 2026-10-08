@@ -18,8 +18,8 @@ edition is set by the licence key after installation, not by which ZIP you insta
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Moodle | **4.5 LTS** (`2024100700`) | Moodle 4.1–4.4 are end-of-life and not supported. Verified on 4.5, 5.0, 5.1 and 5.2. Connecting a **Microsoft 365** mailbox for email ingestion (Pro) needs **Moodle 4.5.5, 5.0.1 or later**. mooDesk detects an older version and says so on the settings page. |
-| PHP | **8.1** (declared minimum) | PHP 8.1 is the declared minimum. The mooDesk CI matrix validates **PHP 8.2, 8.3 and 8.4**; 8.1 is not part of that matrix. |
-| Database | MariaDB 10.6.7+, PostgreSQL 13+ | mooDesk supports **MariaDB and PostgreSQL**, the databases every release is tested on (MariaDB 10.11 and PostgreSQL 16). Since 2.38.0, MySQL is no longer listed as a supported database. |
+| PHP | **8.1** (declared minimum) | Every change is tested on **PHP 8.2, 8.3 and 8.4**; PHP 8.1 is tested on the main branch, on Moodle 4.5. These minimums are Moodle 4.5's own: Moodle 5.0 needs PHP 8.2, MariaDB 10.11 and PostgreSQL 14, and Moodle 5.2 needs PHP 8.3 and PostgreSQL 16, so your real minimum is the higher of the two. |
+| Database | MariaDB 10.6.7+, PostgreSQL 13+ | mooDesk supports **MariaDB and PostgreSQL**, the databases every release is tested on (MariaDB 10.11 and PostgreSQL 16, plus MariaDB 10.6.7 and PostgreSQL 13 on Moodle 4.5). Since 2.38.0, MySQL is no longer listed as a supported database. |
 | PHP extensions | None beyond Moodle's | The PHP `imap` extension is **not** required: email ingestion has its own IMAP client. |
 | Outgoing mail | Configured in Moodle | Ticket notifications, SLA alerts and operator alerts are sent through Moodle's messaging. |
 | Cron | Running | Every background job (SLA checks, auto-close, mail ingestion, webhooks, retention) is a Moodle scheduled task. |
@@ -32,7 +32,7 @@ Composer step and nothing to install on the server.
 ## Getting the package
 
 mooDesk is distributed as a single ZIP named `local_moodesk-<version>.zip` — for example
-`local_moodesk-2.37.0.zip`. The same package runs as Starter, Pro or Enterprise depending on
+`local_moodesk-2.38.1.zip`. The same package runs as Starter, Pro or Enterprise depending on
 the licence you activate afterwards.
 
 <!-- TODO: add official mooDesk download URL when available -->
@@ -85,7 +85,7 @@ Running the install once:
 ## Verifying the installation
 
 1. **Site administration → Plugins → Plugins overview**, section *Local plugins*: **mooDesk**
-   is listed with its version (for this release, `2.37.0`) and the status *Up to date*.
+   is listed with its version (for this release, `2.38.1`) and the status *Up to date*.
 2. **Site administration → Plugins → Local plugins** now contains a **mooDesk** settings page
    plus entries for *License status* and *Departments* (more appear as you gain the
    corresponding capabilities).
@@ -275,4 +275,4 @@ is left in place with its mooDesk capabilities removed; a later reinstall restor
 
 ---
 
-*Verified against mooDesk 2.38.0.*
+*Verified against mooDesk 2.38.1.*

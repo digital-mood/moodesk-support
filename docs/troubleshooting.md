@@ -141,7 +141,7 @@ off, OAuth 2.0 on Google and Microsoft 365) are under [Provider notes](./integra
 
 | Symptom | Usual cause | Confirm | Do |
 |---|---|---|---|
-| No mail becomes a ticket, System Health reads **A source is down** | The connection, login or folder select failed: wrong host, port or password, IMAP disabled at the provider, a certificate rejected, a server without STARTTLS while *Connection security* is *STARTTLS*, or a firewall | Incident `email_ingestion.imap.poll_failed`. Its message names the cause: the connection refused, the certificate rejected, no STARTTLS, or the server's answer to a failed login, with the password removed | Fix the mailbox settings; the next poll clears it. See [Integrations → Connect the mailbox](./integrations#connect-the-mailbox) |
+| No mail becomes a ticket, System Health reads **A source is down** | The connection, login or folder select failed: wrong host, port or password, IMAP disabled at the provider, a certificate rejected, a server without STARTTLS while *Connection security* is *STARTTLS*, or a firewall | Incident `email_ingestion.imap.poll_failed`. Its message names the cause: the connection refused, the certificate rejected, no STARTTLS, or the server's answer to a failed login, with the password removed. Before 2.38.1 a certificate rejected on an *SSL/TLS* mailbox read only `IMAP connect failed:  (0)` | Fix the mailbox settings; the next poll clears it. See [Integrations → Connect the mailbox](./integrations#connect-the-mailbox) |
 | No mail becomes a ticket, System Health reads **A source is down** with an `email_ingestion.oauth2.*` incident | The mailbox is set to OAuth 2.0 and cannot sign in | The incident code, below | Follow the remedy for that code in the [incident reference](#email-ingestion-email-ingestion) |
 | No mail becomes a ticket, System Health is green | The task is disabled, cron is not running, or no new mail has arrived in the polled folder. Mail that was moved out of the folder or deleted before a poll is not seen | Task log of `process_incoming_email`: no runs, or `0` outcomes | [First checks](#first-checks); check the folder name, and that no rule or other client moves mail out of it |
 | The settings page warns that the mailbox is polled without encryption | *Connection security* is *None* | System Health, *Mailbox connection*: *Not encrypted* | Choose *SSL/TLS* or *STARTTLS*, with the port your provider gives for it (usually 993 or 143) |
@@ -151,7 +151,7 @@ off, OAuth 2.0 on Google and Microsoft 365) are under [Provider notes](./integra
 | Every new ticket by mail is refused since *Require* was turned on | The provider profile cannot read a verdict on this mailbox | Incident `email_ingestion.ticket.sender_auth_unreadable` | Choose the right profile, or step back from *Require* — the policy does not change itself |
 | Replies by mail are refused, new tickets work | Reply authentication is *Require token* and the message carried none (`token_required`), or the token did not verify (`token_invalid`), or a valid token came from another address (`token_sender_mismatch`) | Task log outcome; matching `email_ingestion.reply.*` incident | [Integrations → Modes and the round-trip check](./integrations#modes-and-the-round-trip-check) |
 | Replies are refused and an *error* incident says the address is unproven | *Require token* is on but the round-trip probe for the current reply address never came back | Incident `email_ingestion.reply.token_address_unproven` | Fix the reply address and run the probe again. See [Modes and the round-trip check](./integrations#modes-and-the-round-trip-check) |
-| A reply by mail lands as a new ticket | Threading failed: the reply link was stripped by the mail client, or the mode is *Legacy* with its limits | [Integrations → Modes](./integrations#modes-and-the-round-trip-check) | Ask the sender to reply to the notification unedited; prefer token mode |
+| A reply by mail lands as a new ticket | Threading failed: the reply link was stripped by the mail client, or the mode is *Legacy* with its limits. On a site installed fresh before 2.38.1, notifications also used the no-reply address: the site had no key to sign reply addresses | [Integrations → Modes](./integrations#modes-and-the-round-trip-check); the *Reply-To* of a notification is the no-reply address instead of `support+…` | Ask the sender to reply to the notification unedited; prefer token mode. Upgrade to 2.38.1 or later, which creates the missing key |
 | The same mail creates two tickets | Sent twice outside the deduplication window (300 s by default) | Task log shows two `ticket_created` | Raise `email_dedup_window` if your provider re-delivers — [Operator alerts and retention](./configuration#operator-alerts-and-retention) |
 | One message never becomes a ticket | It cannot be parsed (`email_ingestion.parse.failed`: retried, then set aside on the retry list), it cannot be stored (`email_ingestion.message.unprocessable`, set aside for good), or it was abandoned from a full retry list (`email_ingestion.cursor.retry_abandoned`) | Matching incident | Ask the sender to send it again; if it recurs, report it with the sanitised headers |
 | A large message never becomes a ticket | It is over *Maximum message size* (50 MB by default) and was not downloaded | Incident `email_ingestion.message.oversized`, with the message size and the limit | Ask the sender to send it again within the limit. Raising the limit does not bring back a message already recorded |
@@ -222,7 +222,7 @@ as they are and record nothing.
 
 ## Incident reference
 
-Every code mooDesk can write to System Health in 2.37.0, by source. *Retried* says whether
+Every code mooDesk can write to System Health in 2.38.1, by source. *Retried* says whether
 mooDesk itself will try the failed operation again; where it says *no*, the fix is on you and
 the operation has to be redone by hand (or will simply happen next time the event occurs).
 
@@ -248,7 +248,7 @@ All *error*, none retried. `<event>` is one of `ticket_created`, `ticket_replied
 | `email_ingestion.oauth2.blocked_by_policy` | **critical** | The provider's administrator blocks the app for the mailbox account. **Do:** reconnecting does not help; an administrator of the Google Workspace or Microsoft 365 tenant must allow the app | Next poll |
 | `email_ingestion.oauth2.auth_rejected` | **critical** | The mail server refused a freshly renewed token. **Do:** check that IMAP is enabled for the mailbox, that *Mailbox username* is the address the token was issued for (or a shared mailbox the system account has full access to), and the tenant's policies. The server's answer is in the incident | Next poll |
 | `email_ingestion.parse.failed` | warning | One message could not be parsed | Yes, see the retry list below |
-| `email_ingestion.route.failed` | error | Deciding what a message is (new ticket or reply) threw | Yes, see the retry list below |
+| `email_ingestion.route.failed` | error | Deciding what a message is (new ticket or reply) threw, or the database refused a write for a moment (a lock, a deadlock, a read-only database; since 2.38.1) | Yes, see the retry list below |
 | `email_ingestion.message.unprocessable` | error | One message cannot be stored (headers beyond the schema, or a write refused for a reason that will not change). It was marked as processed | No |
 | `email_ingestion.message.oversized` | error | One message is larger than *Maximum message size* and was not downloaded. Its headers are recorded and it was marked as processed. **Do:** ask the sender to send it again within the limit | No |
 | `email_ingestion.cursor.retry_abandoned` | error | The retry list was full (20 messages), so its oldest message was given up | No |
@@ -317,4 +317,4 @@ addresses, hostnames and IDs before attaching them.
 
 ---
 
-*Verified against mooDesk 2.37.0.*
+*Verified against mooDesk 2.38.1.*
