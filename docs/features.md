@@ -74,9 +74,10 @@ Notification preferences*. Which notifications exist and how to switch them off 
 [Configuration → Notifications](./configuration#notifications-1).
 
 **Rate the service** <Badge type="tip" text="Pro" />. When CSAT is enabled, a resolved ticket
-gets a one-question survey (1 to 5, optional comment) reachable through a private link. In
-2.30.0 that link is **not delivered** to the requester — see
-[Not yet in 2.30.0](#not-yet-in-2-30-0).
+gets a one-question survey (1 to 5, optional comment) reachable through a private link. The
+requester receives an invitation with the link, once per ticket, and their ticket page shows a
+*How did we do?* card with a *Rate your experience* button while the invitation is open — see
+[Configuration → CSAT](./configuration#customer-satisfaction-csat).
 
 ## For agents
 
@@ -95,11 +96,20 @@ show as chips that can be removed one by one.
 - **Sort by SLA urgency** puts the tickets closest to breaching first.
 - **Saved views** — any combination of filters can be saved under a name and reopened from
   the *Saved views* menu. Views are personal: each agent keeps their own, and can delete them.
-- **Quick actions** on a row: *Assign to me* and *Set status*.
-- **Bulk actions** — agents with the *manage* capability select tickets across the page and
-  apply **Set status** or **Assign** (including *unassign*) to all of them. Each ticket is
-  processed on its own: one that refuses the change — an invalid transition, an assignee
-  outside its department — is reported, and the others still move.
+- **Quick actions** — hovering a row offers **Assign to me** (on unassigned tickets) and a
+  **Set status** menu. They need the *manage* capability.
+- **Bulk actions** — agents with the *manage* capability tick tickets on the page, or **Select
+  all** for every ticket on the page. A toolbar appears with the count (*N tickets selected*)
+  and stays pinned under the top bar while you scroll. Pick **Change status** or **Assign to
+  agent** (an agent, or *Unassigned*) from *Choose action...*, then **Apply**; **Clear
+  selection** starts over. Selected rows are highlighted.
+  - From **10** tickets, *Apply* asks for confirmation first, because each ticket is updated
+    and notified on its own.
+  - A batch holds at most **30** tickets, which is one page of the list.
+  - While a batch is applied, the button reads *Applying…* and the toolbar and checkboxes are
+    disabled, so a second click cannot send it twice.
+  - Each ticket is processed on its own: one that refuses the change (an invalid transition,
+    an assignee outside its department) is reported, and the others still move.
 
 Opening a row shows the ticket in a side drawer without leaving the list.
 
@@ -129,7 +139,7 @@ article link** into the reply.
 | Create article <Badge type="tip" text="Pro" /> | Start a knowledge base draft pre-filled from this ticket |
 
 **Audit trail.** Every change — creation, status, priority, assignment, category,
-department, team, replies, merges — is recorded with who did it and when. In 2.30.0 the
+department, team, replies, merges — is recorded with who did it and when. In 2.38.1 the
 trail is kept and exported with the user's data, but it is **not shown on the ticket page**.
 
 ### Ticket lifecycle
@@ -264,8 +274,10 @@ is down* — and then:
   repeat reopens it with its history) — both need the *managesettings* capability;
 - the **entitlement** block: edition, active agents against the limit, and *Agent limit
   exceeded* when a site is over;
-- on Pro with email ingestion: the **inbound sender authentication** evidence and whether the
-  strict policy can be armed, and the **retention** sweeps' last run.
+- on Pro with email ingestion: the **mailbox connection** (server, encryption, and how the
+  mailbox signs in: password, or OAuth 2.0 with its service and whether it is ready), the
+  **inbound sender authentication** evidence and whether the strict policy can be armed, and
+  the **retention** sweeps' last run.
 
 Operator alerts for new incidents go out by Moodle messaging to the configured recipients;
 thresholds and cooldown are under
@@ -346,14 +358,13 @@ mooDesk implements Moodle's privacy API, so a site's existing data-request workf
 What leaves the server, and what does not, is under
 [Installation → Network and privacy](./installation#network-and-privacy).
 
-## Not yet in 2.30.0
+## Not yet in 2.38.1
 
-Two features on this page exist but are incomplete in this release. Both are detailed under
+One feature on this page exists but is incomplete in this release. It is detailed under
 [Configuration → Known limitations](./configuration#known-limitations):
 
-- **CSAT survey invitation** — the survey is created, but the requester is not sent the link.
 - **`time_elapsed` automation trigger** — can be saved, is never evaluated.
 
 ---
 
-*Verified against mooDesk 2.30.0.*
+*Verified against mooDesk 2.38.1.*
