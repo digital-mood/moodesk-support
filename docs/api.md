@@ -136,8 +136,15 @@ session, not with a web service token.
 
 Moodle's token administration is still useful to review or delete tokens (the API tokens page
 links to it as *External services admin*), but not to give an integration access. To move an
-integration that used one of these methods, see the
-upgrade notes of [2.34.0 in the changelog](./changelog#_2-34-0-—-2026-09-30).
+integration that used one of these methods:
+
+1. Open **mooDesk → API tokens** and issue a token for the **same user** the integration
+   uses now, with the scopes its calls need. See [Issuing a token](#issuing-a-token).
+2. Configure the integration with the new token, and check that its calls succeed.
+3. Revoke the old token in Moodle's *Manage tokens* screen.
+
+The same steps are in the upgrade notes of
+[2.34.0 in the changelog](./changelog#_2-34-0-—-2026-09-30).
 
 ## Making a request
 
@@ -726,7 +733,7 @@ parameters and return values are not a public contract.
 
 ## Not in the API
 
-What an integration might look for and will not find in 2.31.0. None of these has a
+What an integration might look for and will not find in 2.37.0. None of these has a
 workaround inside the API.
 
 | Wanted | Status |
