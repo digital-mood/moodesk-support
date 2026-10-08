@@ -27,8 +27,8 @@ No. mooDesk is an independent third-party plugin and is not affiliated with or e
 Moodle HQ. Moodle® is a registered trademark of Moodle Pty Ltd.
 
 **Which Moodle versions does it support?**
-Moodle **4.5 LTS** or later, on PHP 8.1 or later, with MariaDB, PostgreSQL or MySQL. The
-detail, including what the CI matrix actually covers, is in
+Moodle **4.5 LTS** or later, on PHP 8.1 or later, with MariaDB or PostgreSQL (MySQL is no longer listed as
+supported since 2.38.0). The detail, including what the CI matrix actually covers, is in
 [Installation → System requirements](./installation#system-requirements).
 
 **Which languages does it come in?**

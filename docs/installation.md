@@ -19,7 +19,7 @@ edition is set by the licence key after installation, not by which ZIP you insta
 |---|---|---|
 | Moodle | **4.5 LTS** (`2024100700`) | Moodle 4.1–4.4 are end-of-life and not supported. Verified on 4.5, 5.0, 5.1 and 5.2. Connecting a **Microsoft 365** mailbox for email ingestion (Pro) needs **Moodle 4.5.5, 5.0.1 or later**. mooDesk detects an older version and says so on the settings page. |
 | PHP | **8.1** (declared minimum) | PHP 8.1 is the declared minimum. The mooDesk CI matrix validates **PHP 8.2, 8.3 and 8.4**; 8.1 is not part of that matrix. |
-| Database | MariaDB 10.6+, PostgreSQL 13+, MySQL 8.0+ | These are Moodle's own requirements; mooDesk adds none. **MariaDB and PostgreSQL** are covered by the mooDesk CI matrix. MySQL 8.0+ is listed as supported, but it is not currently covered by the mooDesk CI matrix. |
+| Database | MariaDB 10.6.7+, PostgreSQL 13+ | mooDesk supports **MariaDB and PostgreSQL**, the databases every release is tested on (MariaDB 10.11 and PostgreSQL 16). Since 2.38.0, MySQL is no longer listed as a supported database. |
 | PHP extensions | None beyond Moodle's | The PHP `imap` extension is **not** required: email ingestion has its own IMAP client. |
 | Outgoing mail | Configured in Moodle | Ticket notifications, SLA alerts and operator alerts are sent through Moodle's messaging. |
 | Cron | Running | Every background job (SLA checks, auto-close, mail ingestion, webhooks, retention) is a Moodle scheduled task. |
@@ -247,7 +247,7 @@ download of a public file; it carries no site URL, no licence, no user data. If 
 unreachable the last valid list is kept, and a list that is not signed by a key this version
 trusts is rejected. Upgrading to 2.37.0 moves a site still on the previous default URL to the
 new one, and discards the list it held. You can switch the check off with the
-*Revocation check* setting, and you will need to allow outbound HTTPS to that host if your
+*Check for revoked licences* setting, and you will need to allow outbound HTTPS to that host if your
 server is behind an egress firewall.
 
 No other data leaves the site unless an administrator configures an outbound **webhook**
@@ -275,4 +275,4 @@ is left in place with its mooDesk capabilities removed; a later reinstall restor
 
 ---
 
-*Verified against mooDesk 2.37.0.*
+*Verified against mooDesk 2.38.0.*
