@@ -17,6 +17,29 @@ The public changelog starts at **2.34.0**. Earlier releases are not listed here.
 
 <!-- Add new releases directly below this line, newest first, with the same headings. -->
 
+## 2.38.1 — 2026-10-08
+
+### Fixed
+
+- **Replying by email works on a site installed fresh.** The key that signs the reply address in
+  notifications was created only when a site upgraded, so a site installed fresh had none: its
+  notifications used the no-reply address and a requester's emailed reply opened a new ticket
+  instead of joining theirs. A fresh install now creates the key, and upgrading to 2.38.1 gives
+  one to every site that is missing it. A site that already has a key keeps it, so reply
+  addresses already sent out keep working. Nothing to do on your side.
+- **Incoming email is retried when the database is briefly busy.** A deadlock, a lock wait
+  timeout or a database that is momentarily read-only could make mooDesk mark an incoming
+  message as unprocessable and never try it again. Those messages are now retried on the next
+  poll. A message that genuinely cannot be stored is still set aside as before.
+- **A mailbox on SSL/TLS whose certificate is refused now says why.** With *Connection
+  security* set to SSL/TLS, a certificate that does not validate was reported as
+  `IMAP connect failed:  (0)`. The error now names the certificate problem, as it already did
+  for STARTTLS.
+- **Saving a ticket's custom fields no longer erases an old date.** A date field saved before
+  dates were validated (for example `30/09/2026`) showed as an empty date box to agents, and
+  saving any field on the ticket erased it. The stored value is now kept until an agent picks a
+  real date, and the field shows what is stored under the date box.
+
 ## 2.38.0 — 2026-10-06
 
 ### Changed
