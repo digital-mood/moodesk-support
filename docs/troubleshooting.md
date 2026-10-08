@@ -23,7 +23,7 @@ this is how to read it when something is wrong.
 |---|---|
 | **Everything is working** | No live incident in the active window (24 hours by default) |
 | **Something needs attention** | At least one live incident of severity *warning* or *error* |
-| **A source is down** | At least one live *critical* incident. Only one thing is critical today: the mailbox poll failing as a whole |
+| **A source is down** | At least one live *critical* incident. Only email ingestion raises critical incidents: the mailbox poll failing as a whole, or an OAuth 2.0 sign-in that cannot happen |
 | A source card reading *N live incident(s)* | Which of the six sources — *Notifications and automation*, *Webhooks*, *Email ingestion*, *Scheduled tasks*, *Knowledge base*, *Interface* — the trouble is in |
 | An incident row | One **fingerprint**: the same failure repeating collapses onto one row and bumps *Occurrences* and *Last seen*, rather than piling up rows. The *code* on the row (for example `email_ingestion.imap.poll_failed`) is what the [incident reference](#incident-reference) below is keyed on |
 | **Acknowledge** | You are on it: alerts for this incident stop, the row stays listed. Needs `local/moodesk:managesettings` |
@@ -96,12 +96,13 @@ cause is documented elsewhere, the link is the fix.
 
 | Symptom | Usual cause | Confirm | Do |
 |---|---|---|---|
-| A Pro or Enterprise screen shows an upgrade prompt on a licensed site | The key is refused, so the site is Starter | *mooDesk → License* shows a verdict other than *valid* | Read the verdict: *malformed*, *forged*, *expired*, *revoked*, *site_mismatch* — each is explained in [Configuration → License](./configuration#license) |
+| A Pro or Enterprise screen shows an upgrade prompt on a licensed site | The key is refused, so the site is Starter | *mooDesk → License* shows a verdict other than *valid* | Read the verdict: *malformed*, *forged*, *untrusted_key*, *expired*, *revoked*, *site_mismatch*. Each is explained in [Configuration → License](./configuration#license) |
+| The site runs as Starter right after upgrading to 2.37.0 | The licence was issued before 2.37.0, which replaced the licence signing key | The verdict says *untrusted_key* | Ask digitalMood for a re-issued licence and paste it under *Licence key*. Nothing was deleted: Pro and Enterprise data comes back with a valid key. See the [2.37.0 upgrade notes](./changelog) |
 | It worked yesterday; today it is Starter | The key expired, or the revocation list now lists it | The verdict says *expired* or *revoked* | Contact digitalMood for a renewed key; paste it under *Licence key*, which revalidates on save |
 | *site_mismatch* on a site that has the right key | The key was issued for another URL — a staging copy of production is the usual case | The verdict names it | A key is bound to one site URL; staging needs its own |
 | *Agent limit exceeded* on License and System Health | More active agents than the licence allows | *Entitlement* block on System Health shows `active / limit` | Nothing stops working; offboard agents or extend the licence — [Configuration → Agents](./configuration#agents) |
 | The revocation check never runs | Outbound HTTPS blocked, or `revocation_enabled` off | Task log of `refresh_revocation_list` | Allow `licenses.moodesk.io` — [Installation → Network and privacy](./installation#network-and-privacy) |
-| `sync_license` runs and does nothing | Expected: the task is registered but performs no work in 2.31.0 | — | Nothing; see [Configuration → Known limitations](./configuration#known-limitations) |
+| `sync_license` runs and does nothing | Expected: the task is registered but performs no work in this release | — | Nothing; see [Configuration → Known limitations](./configuration#known-limitations) |
 
 ### Permissions and visibility
 
@@ -135,20 +136,25 @@ ingestion alert*, *Operational alert* — described in
 
 The mailbox is polled by the `process_incoming_email` task every 5 minutes. Every message
 ends in one of the outcomes listed in [Integrations → Outcomes](./integrations#outcomes);
-the task log counts them per run. Provider-specific pitfalls — app passwords, IMAP switched
-off, Microsoft 365 — are under [Provider notes](./integrations#provider-notes).
+the task log counts them per run. Provider-specific pitfalls (app passwords, IMAP switched
+off, OAuth 2.0 on Google and Microsoft 365) are under [Provider notes](./integrations#provider-notes).
 
 | Symptom | Usual cause | Confirm | Do |
 |---|---|---|---|
-| No mail becomes a ticket, System Health reads **A source is down** | The connection, login or folder select failed: wrong host, port or password, IMAP disabled at the provider, TLS or firewall | Incident `email_ingestion.imap.poll_failed` — its message is the server's answer, with the password removed | Fix the mailbox settings; the next poll clears it — [Integrations → Connect the mailbox](./integrations#connect-the-mailbox) |
-| No mail becomes a ticket, System Health is green | The task is disabled, cron is not running, or the mailbox has no unseen mail in the polled folder | Task log of `process_incoming_email`: no runs, or `0` outcomes | [First checks](#first-checks); check the folder name and that mail arrives unread |
+| No mail becomes a ticket, System Health reads **A source is down** | The connection, login or folder select failed: wrong host, port or password, IMAP disabled at the provider, a certificate rejected, a server without STARTTLS while *Connection security* is *STARTTLS*, or a firewall | Incident `email_ingestion.imap.poll_failed`. Its message names the cause: the connection refused, the certificate rejected, no STARTTLS, or the server's answer to a failed login, with the password removed. Before 2.38.1 a certificate rejected on an *SSL/TLS* mailbox read only `IMAP connect failed:  (0)` | Fix the mailbox settings; the next poll clears it. See [Integrations → Connect the mailbox](./integrations#connect-the-mailbox) |
+| No mail becomes a ticket, System Health reads **A source is down** with an `email_ingestion.oauth2.*` incident | The mailbox is set to OAuth 2.0 and cannot sign in | The incident code, below | Follow the remedy for that code in the [incident reference](#email-ingestion-email-ingestion) |
+| No mail becomes a ticket, System Health is green | The task is disabled, cron is not running, or no new mail has arrived in the polled folder. Mail that was moved out of the folder or deleted before a poll is not seen | Task log of `process_incoming_email`: no runs, or `0` outcomes | [First checks](#first-checks); check the folder name, and that no rule or other client moves mail out of it |
+| The settings page warns that the mailbox is polled without encryption | *Connection security* is *None* | System Health, *Mailbox connection*: *Not encrypted* | Choose *SSL/TLS* or *STARTTLS*, with the port your provider gives for it (usually 993 or 143) |
+| Old mail in the folder never became tickets | The first poll of a folder reads only the last 14 days, and leaves alone a message that was already there without a Message-ID (`rescan_skipped_no_message_id`) | Task log of the first run | Expected. Forward any message you still need to the mailbox, so it arrives as new mail. See [How mooDesk reads the mailbox](./integrations#how-moodesk-reads-the-mailbox) |
+| Mail arrives in mooDesk late, for up to three polls | One message keeps failing with a transient `error`. The poll stops at it so nothing is skipped, and after three polls in a row it moves to the retry list | Task log: `error` counted on consecutive runs; the matching incident (`email_ingestion.parse.failed` or `email_ingestion.route.failed`) | It clears by itself once the message is set aside. If it recurs, report it with the sanitised headers |
 | A sender's mail is refused and the operators get an alert | The sender is not an active Moodle user (`unknown_sender_rejected`), or *Inbound sender authentication* is on *Require* and the verdict was not a pass (`sender_unverified_rejected`) | Task log; the alert names the outcome | The sender needs a Moodle account with that address; or review the strict policy — [Integrations → Sender authentication](./integrations#sender-authentication) |
 | Every new ticket by mail is refused since *Require* was turned on | The provider profile cannot read a verdict on this mailbox | Incident `email_ingestion.ticket.sender_auth_unreadable` | Choose the right profile, or step back from *Require* — the policy does not change itself |
 | Replies by mail are refused, new tickets work | Reply authentication is *Require token* and the message carried none (`token_required`), or the token did not verify (`token_invalid`), or a valid token came from another address (`token_sender_mismatch`) | Task log outcome; matching `email_ingestion.reply.*` incident | [Integrations → Modes and the round-trip check](./integrations#modes-and-the-round-trip-check) |
-| Replies are refused and an *error* incident says the address is unproven | *Require token* is on but the round-trip probe for the current reply address never came back | Incident `email_ingestion.reply.token_address_unproven` | Fix the reply address and run the probe again — [Resetting a ticket's reply links](./integrations#resetting-a-tickets-reply-links) |
-| A reply by mail lands as a new ticket | Threading failed: the reply link was stripped by the mail client, or the mode is *Legacy* with its limits | [Integrations → Modes](./integrations#modes-and-the-round-trip-check) | Ask the sender to reply to the notification unedited; prefer token mode |
+| Replies are refused and an *error* incident says the address is unproven | *Require token* is on but the round-trip probe for the current reply address never came back | Incident `email_ingestion.reply.token_address_unproven` | Fix the reply address and run the probe again. See [Modes and the round-trip check](./integrations#modes-and-the-round-trip-check) |
+| A reply by mail lands as a new ticket | Threading failed: the reply link was stripped by the mail client, or the mode is *Legacy* with its limits. On a site installed fresh before 2.38.1, notifications also used the no-reply address: the site had no key to sign reply addresses | [Integrations → Modes](./integrations#modes-and-the-round-trip-check); the *Reply-To* of a notification is the no-reply address instead of `support+…` | Ask the sender to reply to the notification unedited; prefer token mode. Upgrade to 2.38.1 or later, which creates the missing key |
 | The same mail creates two tickets | Sent twice outside the deduplication window (300 s by default) | Task log shows two `ticket_created` | Raise `email_dedup_window` if your provider re-delivers — [Operator alerts and retention](./configuration#operator-alerts-and-retention) |
-| One message is skipped on every poll | It cannot be parsed (`email_ingestion.parse.failed`, retried each run) or cannot be stored (`email_ingestion.message.unprocessable`, set aside for good) | Matching incident | Move the message out of the folder by hand; if it recurs, report it with the sanitised headers |
+| One message never becomes a ticket | It cannot be parsed (`email_ingestion.parse.failed`: retried, then set aside on the retry list), it cannot be stored (`email_ingestion.message.unprocessable`, set aside for good), or it was abandoned from a full retry list (`email_ingestion.cursor.retry_abandoned`) | Matching incident | Ask the sender to send it again; if it recurs, report it with the sanitised headers |
+| A large message never becomes a ticket | It is over *Maximum message size* (50 MB by default) and was not downloaded | Incident `email_ingestion.message.oversized`, with the message size and the limit | Ask the sender to send it again within the limit. Raising the limit does not bring back a message already recorded |
 | An attachment is missing from a ticket created by mail | Above the size limit — skipped, noted in the task log, no incident — or file storage refused it | Task log line *exceeds max … skipped*; or incident `email_ingestion.attachment.store_failed`. The ticket itself was created | Ask for a smaller file; or check Moodle's data directory |
 | The sender was refused but received no bounce | Sending the bounce failed | Incident `email_ingestion.bounce.send_failed` — same root cause as [Notifications](#notifications) | Fix outgoing mail |
 
@@ -165,7 +171,8 @@ client**, with 5 attempts and the timeouts described in
 | Attempts time out | The endpoint answers in more than 5 seconds | Delivery log | Acknowledge fast, process later |
 | Deliveries stop after five failures and an incident appears | Expected: the row is abandoned after the fifth attempt | Incident `webhook.delivery.abandoned`, one per webhook | Fix the endpoint, then *Resolve*. Abandoned deliveries are **not** replayed |
 | Deliveries fail permanently right after editing the webhook | The webhook was disabled or deleted while rows were pending — they fail permanently | Delivery log | Expected; re-enable before the queue drains next time |
-| The receiver rejects the signature | The secret was cleared: an `update_webhook` API call that did not resend it, or the form saved empty | [Integrations → Verifying the signature](./integrations#verifying-the-signature) | Set the secret again on both sides |
+| The receiver rejects the signature | The secret was rotated in mooDesk and the receiving end still has the old one, or the receiver computes the signature over a re-serialised body | [Integrations → Verifying the signature](./integrations#verifying-the-signature) | Rotate the secret again and configure the new one on the receiving end straight away; it is shown once |
+| Deliveries arrive without an `X-Signature-256` header | The webhook was created before 2.33.0 without a secret: the list marks it *Unsigned* | The webhook list | Use **Rotate secret** on its edit page, and configure the new secret on the receiving end |
 | An event you expected never appears in the log | The webhook is not subscribed to it, or the event does not exist — there is no assignment event | [Integrations → Events and payload](./integrations#events-and-payload) | Subscribe; watch `ticket.updated` for the other fields |
 | `webhook.enqueue.failed` or `webhook.queue.row_failed` | A database failure while queuing or processing — the event for that subscription is **lost** | The incident's `exception_class` | Check the database and Moodle's error log; report if it recurs |
 
@@ -178,13 +185,14 @@ client**, with 5 attempts and the timeouts described in
 | A task shows a *Fail delay* that keeps doubling | The task throws on every run; Moodle backs off | Task log for the exception; System Health for a matching incident | Fix the cause; *Clear fail delay* on the task |
 | `scheduled_task.check_sla.ticket_failed` / `scheduled_task.autoclose.ticket_failed` | One ticket failed inside the task; the run continued with the others | The incident's `ticketid` | Open that ticket; the message says what threw |
 | A retention sweep never runs | Disabled, or the site's cron does not reach the early-morning slots | *Last run* on `purge_incidents`, `purge_webhook_log`, `purge_email_audit`, `purge_kb_events`, `purge_merge_snapshots` | Run cron continuously; the sweeps are spread between 04:20 and 05:50 |
-| An automation rule never fires | Its trigger is `time_elapsed`, which is stored and never evaluated in 2.31.0 | [Configuration → Known limitations](./configuration#known-limitations) | Use an event trigger |
+| An automation rule never fires | Its trigger is `time_elapsed`, which is stored and never evaluated in this release | [Configuration → Known limitations](./configuration#known-limitations) | Use an event trigger |
 
 ### REST API <Badge type="warning" text="Enterprise" />
 
-Every API error is an entry in [API → Errors](./api#errors), and the four checks a call
-passes are in [API → How a call is authorised](./api#how-a-call-is-authorised). The two
-reports that are not API errors:
+Every API error is an entry in [API → Errors](./api#errors), and the checks a call passes are
+in [API → How a call is authorised](./api#how-a-call-is-authorised). Since 2.34.0 a call
+without a token issued from mooDesk's **API tokens** page is refused with
+`api_token_unmanaged`. The two reports that are not API errors:
 
 | Symptom | Usual cause | Do |
 |---|---|---|
@@ -214,7 +222,7 @@ as they are and record nothing.
 
 ## Incident reference
 
-Every code mooDesk can write to System Health in 2.31.0, by source. *Retried* says whether
+Every code mooDesk can write to System Health in 2.38.1, by source. *Retried* says whether
 mooDesk itself will try the failed operation again; where it says *no*, the fix is on you and
 the operation has to be redone by hand (or will simply happen next time the event occurs).
 
@@ -234,10 +242,17 @@ All *error*, none retried. `<event>` is one of `ticket_created`, `ticket_replied
 
 | Code | Severity | Meaning | Retried |
 |---|---|---|---|
-| `email_ingestion.imap.poll_failed` | **critical** | Connecting, logging in or selecting the folder failed — no mail is being read at all | Next poll |
-| `email_ingestion.parse.failed` | warning | One message could not be parsed and was left in the folder | Next poll |
-| `email_ingestion.message.unprocessable` | error | One message cannot be stored (headers beyond the schema, or a write refused for a reason that will not change) and was set aside | No |
-| `email_ingestion.route.failed` | error | Deciding what a message is — new ticket or reply — threw | Next poll |
+| `email_ingestion.imap.poll_failed` | **critical** | Connecting, logging in or selecting the folder failed, so no mail is being read at all. The message names the cause | Next poll |
+| `email_ingestion.oauth2.not_ready` | **critical** | OAuth 2.0 cannot work as configured: no service chosen, a service disabled or without a client, not Google or Microsoft, a Microsoft service not set up for mail, a Moodle version too old for Microsoft 365 (below 4.5.5 / 5.0.1), no system account connected, or one connected before the mailbox chose the service. **Do:** read the warning on the email ingestion settings page; it names the problem | Next poll |
+| `email_ingestion.oauth2.token_refresh_failed` | **critical** | The provider refused to renew the access token: the app was removed from the account, the password changed, or a policy changed. **Do:** connect the system account of the OAuth 2 service again | Next poll |
+| `email_ingestion.oauth2.blocked_by_policy` | **critical** | The provider's administrator blocks the app for the mailbox account. **Do:** reconnecting does not help; an administrator of the Google Workspace or Microsoft 365 tenant must allow the app | Next poll |
+| `email_ingestion.oauth2.auth_rejected` | **critical** | The mail server refused a freshly renewed token. **Do:** check that IMAP is enabled for the mailbox, that *Mailbox username* is the address the token was issued for (or a shared mailbox the system account has full access to), and the tenant's policies. The server's answer is in the incident | Next poll |
+| `email_ingestion.parse.failed` | warning | One message could not be parsed | Yes, see the retry list below |
+| `email_ingestion.route.failed` | error | Deciding what a message is (new ticket or reply) threw, or the database refused a write for a moment (a lock, a deadlock, a read-only database; since 2.38.1) | Yes, see the retry list below |
+| `email_ingestion.message.unprocessable` | error | One message cannot be stored (headers beyond the schema, or a write refused for a reason that will not change). It was marked as processed | No |
+| `email_ingestion.message.oversized` | error | One message is larger than *Maximum message size* and was not downloaded. Its headers are recorded and it was marked as processed. **Do:** ask the sender to send it again within the limit | No |
+| `email_ingestion.cursor.retry_abandoned` | error | The retry list was full (20 messages), so its oldest message was given up | No |
+| `email_ingestion.cursor.uidvalidity_changed` | warning | The server renumbered the folder (for example after a restore), so it is being re-scanned once, 14 days back | — |
 | `email_ingestion.ticket.sender_auth_unreadable` | error | *Require* is on and no usable provider profile, or a verdict the profile cannot read: new tickets by mail are being refused | Each message |
 | `email_ingestion.ticket.sender_unverified` | warning | One new-ticket mail was refused because the receiving server did not authenticate its sender | No |
 | `email_ingestion.reply.token_required` | warning | A reply carried no conversation token and the site requires one | No |
@@ -248,6 +263,10 @@ All *error*, none retried. `<event>` is one of `ticket_created`, `ticket_replied
 | `email_ingestion.attachment.store_failed` | warning | The ticket or reply was created; one attachment could not be stored | No |
 | `email_ingestion.alert.send_failed` | warning | The operator alert about a refusal could not be sent | No |
 | `email_ingestion.bounce.send_failed` | warning | The bounce telling a sender their mail was refused could not be sent | No |
+
+A transient failure stops the poll at that message, and it is retried on the next poll. After
+three polls in a row it moves to a retry list of up to 20 messages, retried first on every
+poll, and the poll moves past it.
 
 ### Webhooks (`webhook`)
 
@@ -298,4 +317,4 @@ addresses, hostnames and IDs before attaching them.
 
 ---
 
-*Verified against mooDesk 2.31.0.*
+*Verified against mooDesk 2.38.1.*

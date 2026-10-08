@@ -17,7 +17,7 @@ Sections that belong to a paid edition are shown on every edition; the code behi
 nothing until the feature is licensed. Where an edition matters it is marked
 <Badge type="tip" text="Pro" /> or <Badge type="warning" text="Enterprise" />.
 
-::: info Not operational in 2.30.0
+::: info Not operational in this release
 A few things exist on the settings page or in a form but do not do what their label suggests
 in this release. They are listed where they appear and summarised under
 [Known limitations](#known-limitations).
@@ -49,7 +49,7 @@ In the order the settings page shows them. *Default* is the value a fresh instal
 |---|---|---|---|
 | Licence key | `license_key` | The licence issued by digitalMood for this site. Empty runs the site as Starter. Saving revalidates the key and refreshes the License page. | — |
 | Check for revoked licences | `revocation_enabled` | Fetch the licence revocation list once a day. | on |
-| Revocation list URL | `revocation_crl_url` | Where the list is downloaded from. | `https://licenses.moodesk.io/crl/revocations.json` |
+| Revocation list URL | `revocation_crl_url` | Where the list is downloaded from. Since 2.37.0, upgrading moves a site still on the previous default to the new one; a URL you chose yourself is left alone. | `https://licenses.moodesk.io/crl/v2/revocations.json` |
 
 After saving a key, open **mooDesk → License** (site administrators only). It shows the
 verdict, the effective edition, the expiry, and the *Agents* row as `active / limit`. When a
@@ -60,7 +60,8 @@ data stays in the database, and a valid key brings everything back. The page nam
 |---|---|
 | `missing` | No key saved |
 | `malformed` | The text is not a licence key mooDesk can read |
-| `forged` | The key's signature does not verify |
+| `forged` | The key's signature does not verify against the signing key it names |
+| `untrusted_key` | The key is signed with a key this version of mooDesk does not trust. Licences issued before 2.37.0 show this after upgrading, because 2.37.0 replaced the signing key. Ask digitalMood for a re-issued licence and paste it under *Licence key* |
 | `expired` | The key is past its expiry date |
 | `revoked` | The key is on the revocation list |
 | `site_mismatch` | The key was issued for another site URL — a staging copy of production is the usual case |
@@ -129,22 +130,19 @@ polls the mailbox **every 5 minutes** — see
 prerequisites, provider notes, what happens to each incoming message — is in
 [Integrations](./integrations).
 
-::: warning Microsoft 365 / Exchange Online mailboxes cannot be connected in 2.30.0
-mooDesk 2.30.0 authenticates with IMAP `LOGIN` (username and password) only and does not
-implement OAuth2 (`XOAUTH2`), which Exchange Online requires. Use a mailbox on a provider that
-still accepts password authentication over IMAP.
-:::
-
 | Setting | Key | What it does | Default |
 |---|---|---|---|
 | Enable email ingestion | `email_ingestion_enabled` | Master switch | off |
 | IMAP server hostname | `email_imap_host` | | — |
-| IMAP port | `email_imap_port` | | 993 |
-| Use SSL/TLS | `email_imap_ssl` | TLS from the first byte. Off means a plain-text connection. | on |
-| Mailbox username | `email_imap_user` | An email address | — |
-| Mailbox password | `email_imap_password` | Stored as a Moodle plugin setting, like every other plugin secret | — |
+| IMAP port | `email_imap_port` | Usually 993 for SSL/TLS and 143 for STARTTLS | 993 |
+| Connection security | `email_imap_security` | *SSL/TLS* (encrypted from the first byte) · *STARTTLS* (connects in the clear and upgrades to TLS before signing in. The poll fails if the server does not offer it) · *None (not encrypted)*. Both TLS modes check the certificate against the host name. With *None*, the settings page shows a warning and System Health marks the mailbox *Not encrypted* | SSL/TLS |
+| Mailbox username | `email_imap_user` | An email address. With OAuth 2.0, the mailbox address: the system account's own, or a shared mailbox it has full access to | — |
+| Authentication | `email_imap_auth` | *Password* (IMAP `LOGIN`) · *OAuth 2.0 (Google, Microsoft 365)* (an access token from a Moodle OAuth 2 service). Microsoft 365 accepts only OAuth 2.0 | Password |
+| Mailbox password | `email_imap_password` | Used, and shown, only with *Password*. Stored as a Moodle plugin setting, like every other plugin secret | — |
+| OAuth 2 service | `email_imap_oauth2_issuer` | Shown only with *OAuth 2.0*. The Moodle OAuth 2 service whose system account opens the mailbox. Choose it and save **before** connecting the system account. While the saved choice cannot work, the settings page lists why. No token is stored by mooDesk | none |
 | IMAP folder | `email_imap_folder` | Folder to poll | `INBOX` |
 | Maximum messages per run | `email_imap_maxmessages` | Messages one poll processes; the rest wait for the next run. `0` = no cap | 100 |
+| Maximum message size | `email_imap_maxmessagebytes` | 10, 25, 50 or 100 MB. A larger message is not downloaded: its sender and subject are recorded, an incident is raised, and it is marked as processed. Raising the limit does not bring it back, because its Message-ID is on record. Ask the sender to send it again within the limit | 50 MB |
 | Default department for email tickets | `email_default_departmentid` | Department for tickets opened by mail; *No department* makes them visible to every agent | none |
 | Default category for email tickets | `email_default_categoryid` | | the site default |
 
@@ -222,14 +220,18 @@ feature — even though they sit inside a Pro section of the page.
 | Survey link expiry (days) | `csat_token_expiry_days` | How long the survey link stays valid | 30 |
 | Custom invitation message | `csat_invitation_message` | A paragraph of your own for the invitation | — |
 
-::: warning Not operational in 2.30.0
-When a ticket reaches the trigger status, mooDesk creates the survey record but **does not
-deliver the invitation** to the requester: no mail is sent and no link is shown on their
-ticket. *Custom invitation message* is not used. The survey page, the rating scale and the
-*Customer satisfaction* card agents see all work once a requester reaches the link, but in
-2.30.0 there is no built-in way for them to receive it. Do not promise CSAT to requesters on
-this version.
-:::
+When a ticket reaches the trigger status, the requester is invited **once per ticket**,
+never again on a later transition:
+
+- **An invitation** goes out through the *Ticket notification* message provider, so the
+  requester's own notification preferences apply. It carries the survey link and how many days
+  it stays valid, with *Custom invitation message* in front of the standard wording when one is
+  set.
+- **A *How did we do?* card** with a *Rate your experience* button stays on the requester's own
+  ticket page while the invitation is open. Only the requester sees it.
+
+Replying to the invitation does not reach the ticket. Before 2.31.0 the invitation was never
+delivered.
 
 ### Webhooks <Badge type="warning" text="Enterprise" />
 
@@ -433,7 +435,7 @@ Three message providers, each enabled by default for email and popup:
 
 | Provider | Carries |
 |---|---|
-| Ticket notification | The four ticket notifications |
+| Ticket notification | The four ticket notifications, and the CSAT invitation (Pro) |
 | Email ingestion alert | Operator alerts from email ingestion — an inbound mail that could not be routed |
 | Operational alert | Operator alerts from System Health — a source that started failing |
 
@@ -461,7 +463,7 @@ trigger run ascending), **Active**, and three JSON fields validated on save:
 | `ticket_created` | A ticket is created, from any source | — |
 | `status_changed` | A ticket changes status | `{"from": 1, "to": 4}` — either side `null` for *any* |
 | `sla_breached` | The hourly check puts a ticket in breach | — |
-| `time_elapsed` | **Never — not evaluated in 2.30.0** (see below) | `{"hours": 24, "since": "created"}` |
+| `time_elapsed` | **Never — not evaluated in this release** (see below) | `{"hours": 24, "since": "created"}` |
 
 **Conditions** (JSON array; `[]` matches every ticket; all must pass): `priority_is`,
 `status_is`, `department_is`, `category_is`, `assignee_is` — each with `"operator"` `equals`
@@ -494,7 +496,7 @@ How rules run:
 - Every run is recorded in the rule's execution log.
 - Below Pro, rules stay stored and inert.
 
-::: warning `time_elapsed` is not operational in 2.30.0
+::: warning `time_elapsed` is not operational in this release
 The trigger can be selected and saved, but nothing evaluates it: a rule with that trigger is
 stored and never fires. For "after N hours" behaviour on this version, use the SLA targets
 and an `sla_breached` rule.
@@ -502,15 +504,13 @@ and an `sla_breached` rule.
 
 ## Known limitations
 
-Configuration that exists in 2.30.0 but does not do what its label suggests:
+Configuration that exists in 2.38.1 but does not do what its label suggests:
 
-| Where | What | Status in 2.30.0 |
+| Where | What | Status in 2.38.1 |
 |---|---|---|
-| CSAT | Survey invitation to the requester; *Custom invitation message* | Not delivered; setting unused |
 | Automations | `time_elapsed` trigger | Stored, never evaluated |
 | Scheduled tasks | `sync_license` | Registered and enabled; performs no work |
-| Email ingestion | Microsoft 365 / Exchange Online mailboxes | Cannot be connected: IMAP `LOGIN` only, no `XOAUTH2` |
 
 ---
 
-*Verified against mooDesk 2.30.0.*
+*Verified against mooDesk 2.38.1.*

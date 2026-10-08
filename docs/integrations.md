@@ -24,18 +24,20 @@ page links to them rather than repeating them.
 ## Email ingestion <Badge type="tip" text="Pro" />
 
 mooDesk polls one IMAP mailbox and turns each message into a new ticket or a reply on an
-existing one. The mailbox is yours, on any provider that offers IMAP with a username and
-password.
+existing one. The mailbox is yours. It signs in with its **password**, or, on Gmail / Google
+Workspace and Microsoft 365, with **OAuth 2.0** through a Moodle OAuth 2 service.
 
 ### Before you start
 
 | Who | What |
 |---|---|
-| **Your provider** | A **dedicated** mailbox — used by nothing and nobody else — reachable over IMAP with a **username and password**. mooDesk 2.30.0 authenticates with the IMAP `LOGIN` command only; it does not implement OAuth2 / `XOAUTH2`. |
-| **Moodle** | Outgoing mail configured (*Site administration → Server → Email → Outgoing mail configuration*) — notifications, operator alerts and the reply-address check all go out through it. Cron running: the poll is a scheduled task. |
-| **mooDesk** | A Pro licence. Nothing else: the IMAP client is built into the plugin, so the PHP `imap` extension is **not** required — the text on the settings page that says otherwise is out of date. |
+| **Your provider** | A **dedicated** mailbox reachable over IMAP, used by nothing else. Either a password that works over IMAP (on Gmail, an app password), or a Google or Microsoft account that can sign in with OAuth 2.0. **Microsoft 365 accepts OAuth 2.0 only**: Microsoft has turned off password sign-in over IMAP. |
+| **Moodle** | Outgoing mail configured (*Site administration → Server → Email → Outgoing mail configuration*): notifications, operator alerts and the reply-address check all go out through it. Cron running, because the poll is a scheduled task. For OAuth 2.0, an OAuth 2 service under *Site administration → Server → OAuth 2 services* ([Signing in with OAuth 2.0](#signing-in-with-oauth-2-0)). For Microsoft 365 over OAuth 2.0, **Moodle 4.5.5, 5.0.1 or later**. |
+| **mooDesk** | A Pro licence, and nothing else to install. The IMAP client is built into the plugin, so the PHP `imap` extension is **not** required. |
 
-The mailbox should start empty. A backlog is drained over several runs, oldest first, up to
+The first poll of a folder reads only the **last 14 days** of mail in it
+([how the mailbox is read](#how-moodesk-reads-the-mailbox)), so an older backlog does not
+become tickets. Within that window, a backlog is drained over several runs, oldest first, up to
 *Maximum messages per run* each time.
 
 ### Connect the mailbox
@@ -43,15 +45,27 @@ The mailbox should start empty. A backlog is drained over several runs, oldest f
 In **Site administration → Plugins → Local plugins → mooDesk → Email ingestion**
 ([settings and defaults](./configuration#email-ingestion)):
 
-1. Enter the **host**, **port** and **username** (an email address) and the mailbox
-   **password**.
-2. Leave **Use SSL/TLS** on. It means *implicit TLS* — the connection is encrypted from the
-   first byte, which is what port 993 expects. Switching it off makes a **plain, unencrypted
-   TCP connection**: the code allows it, production should not. mooDesk 2.30.0 does not
-   implement **STARTTLS**, so a server that only upgrades a plain connection on port 143 cannot
-   be used securely.
-3. Choose the **folder** (`INBOX` unless you filter mail into another one) and the
-   **department** and **category** new mail-borne tickets should get.
+1. Enter the **host** and **port**, and choose the **Connection security**:
+   - **SSL/TLS**: encrypted from the first byte, usually on port 993. The default.
+   - **STARTTLS**: connects on the plain port, usually 143, and upgrades to TLS before signing
+     in. If the server does not offer STARTTLS, the poll fails. It never carries on
+     unencrypted.
+   - **None (not encrypted)**: the password and every message cross the network readable.
+     While a mailbox is polled this way, the settings page shows a warning, and
+     [System Health](./features#system-health) marks the mailbox *Not encrypted*.
+
+   Both TLS modes check the server's certificate against the host name. There is no switch to
+   accept any certificate.
+2. Choose the **Authentication**:
+   - **Password**: enter the **Mailbox username** (an email address) and the **Mailbox
+     password**. mooDesk signs in with IMAP `LOGIN`. This is the default.
+   - **OAuth 2.0 (Google, Microsoft 365)**: enter the mailbox address as **Mailbox username**
+     and choose the **OAuth 2 service**. Follow the order under
+     [Signing in with OAuth 2.0](#signing-in-with-oauth-2-0): mooDesk needs the service saved
+     before its system account is connected.
+3. Choose the **folder** (`INBOX` unless you filter mail into another one), the **Maximum
+   message size**, and the **department** and **category** that tickets opened by mail should
+   get.
 4. Switch **Enable email ingestion** on and save.
 5. Run `process_incoming_email` once from **Site administration → Server → Tasks → Scheduled
    tasks** and send a test message to the mailbox. On its own the task runs **every 5
@@ -60,41 +74,108 @@ In **Site administration → Plugins → Local plugins → mooDesk → Email ing
 Attachments on incoming mail are stored when [attachments are enabled](./configuration#general),
 within the site's size limit.
 
+### Signing in with OAuth 2.0
+
+With *Authentication* set to **OAuth 2.0**, the poller signs in with an access token instead of
+a password. The token comes from a **Moodle OAuth 2 service** and its **system account**.
+mooDesk adds the mail scope to the system account of the service you choose. Moodle obtains,
+keeps and renews the token. **mooDesk stores no token**, only which service to use. Only Google
+and Microsoft services are accepted.
+
+The order matters, because the mail scope is requested when the system account is connected:
+
+1. Create or pick the OAuth 2 service in **Site administration → Server → OAuth 2 services**
+   ([Google](#gmail-google-workspace) or [Microsoft 365](#microsoft-365-exchange-online)
+   below).
+2. In mooDesk's email ingestion settings, set *Authentication* to **OAuth 2.0**, choose the
+   service as *OAuth 2 service*, fill in *Mailbox username* and **save**.
+3. Back in *OAuth 2 services*, **connect the system account** of that service. Sign in as the
+   mailbox user and accept the access to mail. A system account connected before step 2 does
+   not have the mail scope, so connect it again.
+4. Switch on *Enable email ingestion*. Until the configuration can work, the settings page says
+   what is stopping it, and System Health marks the mailbox *Needs attention*.
+
+The system account is a real user signing in on the mailbox's behalf. If its password changes,
+the account is disabled, or a sign-in policy starts applying to it, the provider may refuse to
+renew the token. When that happens, connect the system account again.
+
+When a sign-in fails, System Health records one of four incidents, one per remedy:
+`email_ingestion.oauth2.not_ready`, `email_ingestion.oauth2.token_refresh_failed`,
+`email_ingestion.oauth2.blocked_by_policy` and `email_ingestion.oauth2.auth_rejected`. What each
+means, and what to do, is in
+[Troubleshooting → Email ingestion](./troubleshooting#email-ingestion-email-ingestion). A
+token the server refuses is renewed once before anything is reported, so a token that has
+merely gone stale recovers on its own.
+
 ### What happens to each message
 
-For every message the poll finds, in this order:
+For every message the poll reads, in this order:
 
-1. **Parse.** A message that cannot be parsed at all is set aside and an incident is raised.
-2. **Automatic replies** — out-of-office, bounces, list traffic, recognised by the standard
-   `Auto-Submitted`, `X-Auto-Response-Suppress` and `Precedence` headers — are dropped.
-3. **Already processed** — a message seen on an earlier run is skipped, so a second poll of
-   the same mailbox is harmless.
-4. **Sender authentication** — the verdict your provider stamped on the message is read and
+1. **Size.** A message larger than *Maximum message size* (default 50 MB) is not downloaded.
+   Its sender and subject are recorded as `unprocessable`, an
+   `email_ingestion.message.oversized` incident is raised, and the message is marked as
+   processed in the mailbox. Raising the limit later does not bring it back, because its
+   Message-ID is on record. To take it in, ask the sender to send it again within the limit.
+2. **Parse.** A message that cannot be parsed raises an incident and is retried (see
+   [A message that keeps failing](#how-moodesk-reads-the-mailbox)).
+3. **Automatic replies** (out-of-office, bounces, list traffic) are dropped. They are
+   recognised by the standard `Auto-Submitted`, `X-Auto-Response-Suppress` and `Precedence`
+   headers.
+4. **The reply-address check.** The probe sent from the settings page is recognised and
+   consumed ([Modes and the round-trip check](#modes-and-the-round-trip-check)).
+5. **Already processed.** A message whose Message-ID is already on record is skipped, so
+   reading the same message twice is harmless.
+6. **Sender authentication.** The verdict your provider stamped on the message is read and
    recorded ([Sender authentication](#sender-authentication)).
-5. **Reply token** — if the message was sent to a tokenised reply address, the token is
+7. **Reply token.** If the message was sent to a tokenised reply address, the token is
    verified ([Replying by email](#replying-by-email)).
-6. **Threading** — a valid token names the ticket. Without one, `In-Reply-To` / `References`
+8. **Threading.** A valid token names the ticket. Without one, `In-Reply-To` / `References`
    are matched against the Message-IDs of mail mooDesk has **received** for a ticket (kept for
-   the *Ticket correspondence retention* period); mooDesk does not record the Message-ID of
+   the *Ticket correspondence retention* period). mooDesk does not record the Message-ID of
    the notifications it sends, so a reply to a notification threads reliably only through
    the token. A match becomes a **public reply** from the sender. A reply to a **closed**
    ticket opens a **new ticket** instead. A reply to a ticket that was **merged** into another
    is refused, and the sender is told which ticket to write to.
-7. **Duplicates** — the same sender and subject inside the *Deduplication window* is dropped.
-8. **New ticket** — the sender as requester, the subject as subject, the text body as
-   message, attachments on the opening message, source *Email*, in the configured department
-   and category — after the sender-authenticity policy has had its say.
+9. **Duplicates.** The same sender and subject inside the *Deduplication window* is dropped.
+10. **New ticket.** The sender becomes the requester, the subject the subject and the text
+    body the message. Attachments go on the opening message, the source is *Email*, and the
+    configured department and category apply. All of this happens after the sender-authenticity
+    policy has had its say.
 
 At the point a ticket or reply would be written, the sender's address must match **one active
 Moodle account**. If it does not, the message is **refused**: no ticket, no placeholder, no
 account created. The refusal is recorded, and the operators in *Unknown-sender alert
 recipients* are notified.
 
-**How mooDesk remembers what it has read.** Each processed message is tagged with an IMAP
-keyword of mooDesk's own, so a person or another client opening the mailbox does not make the
-poller skip anything. On a server that does not support custom keywords the poller falls back
-to the standard *Seen* flag and says so in the task log — on such a server, a message read by
-a human before the poll runs is never picked up. Messages are never deleted or moved.
+### How mooDesk reads the mailbox
+
+**By position, not by flag.** For each mailbox and folder, mooDesk keeps a cursor: the highest
+message UID it has read, and the folder's `UIDVALIDITY`. Each poll asks for what arrived above
+it. Reading, flagging or un-flagging mail in webmail changes nothing. Processed messages are
+still flagged so webmail shows what was handled: a mooDesk keyword plus *Seen* where the folder
+accepts keywords, *Seen* alone where it does not (Microsoft 365). mooDesk never reads those
+flags back. Messages are never deleted or moved. A message that something else **moves out of
+the folder or deletes** before a poll is not seen.
+
+**A message that keeps failing.** A transient failure (`error`) stops the poll at that message,
+so an outage skips nothing. Mail behind it waits for the next poll. If the same message fails on
+three polls in a row, it is set aside on a **retry list**, retried first on every poll, and the
+poll moves past it. The list holds **20** messages. Past that, the oldest is abandoned and an
+`email_ingestion.cursor.retry_abandoned` incident is raised.
+
+**The one-time re-scan.** When mooDesk has no cursor for a folder, it reads the folder from the
+start, once. That happens on the first poll after upgrading to 2.37.0, for a newly connected
+mailbox, and after the host, port, username or folder changes. It also happens when a poll
+finds the folder's `UIDVALIDITY` changed: the server renumbered it, for example after a restore
+or after the folder was recreated, and an `email_ingestion.cursor.uidvalidity_changed` incident
+records it. The re-scan:
+
+- reads only messages from the **last 14 days**, so months-old mail that was never ingested does
+  not turn into tickets and notify its senders now;
+- recognises messages already handled by their Message-ID and skips them (`already_processed`);
+- leaves alone a message that was already in the folder and has **no Message-ID**
+  (`rescan_skipped_no_message_id`), since nothing could tell whether it is already a ticket;
+- respects the per-run cap. The task log says when the re-scan is complete.
 
 ### Outcomes
 
@@ -107,59 +188,100 @@ short. Refusals also appear as operator alerts, and failures as incidents on
 |---|---|
 | `ticket_created` | A ticket was opened |
 | `reply_added` | A public reply was added to an existing ticket |
-| `probe_confirmed` | The reply-address check came back; consumed, nothing created |
+| `probe_confirmed` | The reply-address check came back. It was consumed and nothing was created |
 | `autoreply_skipped` | An automatic reply, dropped |
 | `duplicate_skipped` | Inside the deduplication window, dropped |
-| `already_processed` | Seen on an earlier run |
-| `unknown_sender_rejected` | The sender is not an active Moodle user — operators alerted |
-| `sender_unverified_rejected` | Sender authenticity is *Require* and the verdict was not a pass — operators alerted |
+| `already_processed` | Its Message-ID is already on record (an earlier run, or the re-scan) |
+| `rescan_skipped_no_message_id` | Re-scan only: already in the folder and has no Message-ID, so it was left alone |
+| `unknown_sender_rejected` | The sender is not an active Moodle user. Operators alerted |
+| `sender_unverified_rejected` | Sender authenticity is *Require* and the verdict was not a pass. Operators alerted |
 | `token_required` | Reply authentication is *Require token* and the reply carried none |
-| `token_invalid` | A token that does not verify — refused in every mode |
+| `token_invalid` | A token that does not verify. Refused in every mode |
 | `token_sender_mismatch` | A valid token, but sent from an address that is not the user it was issued to |
-| `unauthorised_rejected` | A reply from a user who may not write to that ticket — operators alerted, sender not told |
-| `merged_rejected` | A reply to a ticket merged into another — the sender is told where to continue |
-| `unprocessable` | A message that will never parse; set aside, incident raised |
-| `error` | A transient failure on this message; retried on the next run |
+| `unauthorised_rejected` | A reply from a user who may not write to that ticket. Operators alerted, sender not told |
+| `merged_rejected` | A reply to a ticket merged into another. The sender is told where to continue |
+| `unprocessable` | A message that will never be stored: larger than *Maximum message size*, or a header the database cannot hold. Marked as processed, incident raised |
+| `error` | A transient failure on this message. The poll stops there and retries it on the next run |
 
 ### Provider notes
 
 #### Gmail / Google Workspace
 
-mooDesk connects with a username and password. On Gmail and Google Workspace that normally
-means an **app password** tied to an account with **2-Step Verification** on — **when Google
-and your organisation's administered policy allow app passwords**. Whether they are available
-is decided by Google and by the Workspace administrator, not by mooDesk; where they are turned
-off, the mailbox cannot be connected with 2.30.0. The account's ordinary Google password is
-not a supported way to connect.
-
 | Setting | Value |
 |---|---|
 | IMAP server hostname | `imap.gmail.com` |
 | IMAP port | `993` |
-| Use SSL/TLS | on |
+| Connection security | SSL/TLS |
 | Mailbox username | the mailbox address |
-| Mailbox password | the app password |
 
-IMAP access must be enabled on the account. For sender authentication, Google Workspace is
-the one provider profile mooDesk ships — see [Provider profiles](#provider-profiles).
+IMAP access must be enabled on the account. Then choose one of these:
 
-#### Microsoft 365 / Exchange Online — not supported for email ingestion in 2.30.0
+- **OAuth 2.0** (recommended). There is nothing to rotate, and no dependency on app passwords,
+  which a Workspace administrator can switch off for the whole tenant. Moodle's **Google** OAuth
+  2 service works as it is, including the one your users log in with. In Google Cloud the OAuth
+  client is a *Web application* with the redirect URI
+  `https://<your site>/admin/oauth2callback.php`. mooDesk asks for the
+  `https://mail.google.com/` scope, which Google classes as restricted. On Google Workspace,
+  set the consent screen to **Internal**: only your domain's users can consent, and no Google
+  verification is needed. An *External* app left in *Testing* loses its authorisation seven
+  days after consent, and the poll stops until the system account is connected again.
+- **Password** with an **app password**, on an account with **2-Step Verification** on. The
+  account's ordinary Google password does not work over IMAP. Whether app passwords are
+  available is decided by Google and by your Workspace administrator, not by mooDesk.
 
-Exchange Online requires an authentication mechanism that mooDesk 2.30.0's IMAP client does
-not implement: mooDesk authenticates with `LOGIN` only and has no `XOAUTH2` support. A
-Microsoft 365 mailbox therefore cannot be polled by this version. Use a Google Workspace
-mailbox or an IMAP server of your own. This is a limitation of the email ingestion channel,
-not of running mooDesk alongside Microsoft 365 in general.
+A Workspace administrator can restrict IMAP or third-party app access for the tenant. The poll
+then fails with an OAuth 2.0 incident. For sender authentication, Google Workspace is the one
+provider profile mooDesk ships. See [Provider profiles](#provider-profiles).
+
+#### Microsoft 365 / Exchange Online
+
+Microsoft has turned off password sign-in over IMAP for every tenant. **OAuth 2.0 is the only
+way to connect a Microsoft 365 mailbox.**
+
+- **Moodle 4.5.5, 5.0.1 or later.** Earlier Moodle versions cannot get a mail token from
+  Microsoft (Moodle issue MDL-80380). mooDesk detects this at runtime and says so on the
+  settings page. This requirement applies only to Microsoft 365 over OAuth 2.0.
+- **Set up a separate Microsoft service for mail.** Do not use the Microsoft service your
+  users log in with. Microsoft issues a token for one resource only, and the login service
+  also asks for Microsoft Graph, so its system account cannot be connected for mail. Create a
+  **second** Microsoft service in *OAuth 2 services*:
+
+  | Field | Value |
+  |---|---|
+  | *Client ID* / *Client secret* | From the Microsoft Entra app registration. The login service's app can be reused |
+  | *Show on login page* | **SMTP with XOAUTH2 only**. mooDesk refuses a Microsoft service in any other mode |
+  | *SMTP email* | The mailbox's address |
+  | *Scopes included in a login request for offline access* | Exactly `openid profile email offline_access https://outlook.office.com/SMTP.Send`. No `user.read`, and no other Microsoft Graph scope |
+
+  Because of that mode, Moodle requests `SMTP.Send`, so the consent screen also asks to send
+  mail as the mailbox. **mooDesk never sends mail through this service.** It only reads the
+  mailbox. Outgoing mail keeps using Moodle's own settings.
+- **App registration.** Platform *Web*, redirect URI
+  `https://<your site>/admin/oauth2callback.php`, and the **delegated** permissions
+  `IMAP.AccessAsUser.All` and `SMTP.Send`, plus `offline_access`, `openid`, `profile` and
+  `email`. A tenant's default policy does not let ordinary users consent to IMAP access, so an
+  administrator grants admin consent for the app.
+- **The mailbox.** IMAP must be enabled for it. For a **shared mailbox**, put its address in
+  *Mailbox username* and connect the system account as a user with *Full Access* to it.
+- **Not supported:** app-only access (client credentials). Moodle core has no such flow, and
+  mooDesk keeps no tokens of its own.
+
+::: warning Not yet validated on a Microsoft 365 business tenant
+OAuth 2.0 over IMAP with Microsoft has been validated against a Microsoft (outlook.com) account:
+the mail service above, sign-in, token renewal, and the refusal of a token issued for another
+address or for Microsoft Graph. Things only a Microsoft 365 business tenant has are **not yet
+validated**: shared mailboxes, admin consent, single-tenant endpoints, tenant policies such as
+MFA or Conditional Access, administrative revocation (an administrator revoking sessions or
+resetting the password), and IMAP disabled per mailbox. What this page says about them follows
+Microsoft's and Moodle's documentation, not a test.
+:::
 
 #### Other IMAP servers
 
-Any server that accepts `LOGIN` over implicit TLS works. Two things to check:
-
-- **Custom keywords.** If the server accepts them on the polled folder, the mailbox can be
-  read by people without affecting the poll. If not, the fallback described above applies and
-  the mailbox must be left alone.
-- **Sub-addressing** (`support+anything@…` delivered to `support@…`), if you intend to use
-  [Replying by email](#replying-by-email).
+Any server that accepts IMAP `LOGIN` over SSL/TLS or STARTTLS works with *Password*. OAuth 2.0
+is available only for Google and Microsoft. If you plan to use
+[Replying by email](#replying-by-email), check that the server supports **sub-addressing**
+(`support+anything@…` delivered to `support@…`).
 
 ## Replying by email <Badge type="tip" text="Pro" />
 
@@ -275,15 +397,28 @@ silent downgrade.
 ## Webhooks <Badge type="warning" text="Enterprise" />
 
 mooDesk sends an HTTP `POST` with a JSON body to a URL of yours when something happens to a
-ticket. Deliveries are queued and retried, signed when you set a secret, and logged.
+ticket. Deliveries are queued, retried, signed and logged.
 
 ### Create a webhook
 
-**mooDesk → Webhooks** (`managewebhooks`). *Add webhook* asks for a **name**, the **URL**, an
-optional **signing secret**, **Active**, and the **events** to subscribe to (at least one).
-Once saved, **Send test ping** posts a `test.ping` payload to the URL right away and shows the
-HTTP status it got back; the recent deliveries of each webhook are listed with event, time,
-HTTP status and outcome.
+**mooDesk → Webhooks** (`managewebhooks`). *Add webhook* asks for a **name**, the **URL**, a
+**signing secret**, **Active**, and the **events** to subscribe to (at least one). Once saved,
+**Send test ping** posts a `test.ping` payload to the URL right away and shows the HTTP status
+it got back. The recent deliveries of each webhook are listed with event, time, HTTP status and
+outcome.
+
+**The signing secret is shown once.** Leave the field empty and mooDesk generates a strong
+secret (64 characters). If you type your own, it must be at least 32 characters. Either way,
+the secret is shown **once**, on the webhook list, right after you save. Configure it on the
+receiving end then: it is never shown again, and the edit form has no secret field. If it is
+lost, or might have leaked, use **Rotate secret** in the *Signing secret* panel of the webhook's
+edit page. That generates a new secret, shows it once the same way, and signs deliveries with
+it straight away, so the receiving end rejects them until it is updated.
+
+Webhooks created before 2.33.0 keep their secret and keep working. The list marks a webhook
+as *Signed*, as *Unsigned* (no secret: deliveries carry no signature) or as *Weak secret*
+(shorter than 32 characters). Rotate the secret of an *Unsigned* or *Weak secret* webhook to
+replace it with a generated one.
 
 | Who | What |
 |---|---|
@@ -302,7 +437,7 @@ HTTP status and outcome.
 | `ticket.merged` | A ticket is merged into another | `source`, `target`, `audit_id`, `migrated_summary` (`replies_count`, `internal_notes_count`, `attachments_count`, `history_entries_count`) |
 | `ticket.merge_reverted` | A merge is undone | `source`, `target`, `audit_id`, `actor` |
 
-**Assignment changes do not raise a webhook in 2.30.0.** Watch `ticket.updated` for the
+**Assignment changes do not raise a webhook.** Watch `ticket.updated` for the
 other sidebar fields; the assignee is only visible as `ticket.assigneeid` in the next payload.
 
 Every event carries the same envelope:
@@ -360,9 +495,10 @@ X-Signature-256: sha256=3f5a…e0c1
 
 - `X-Moodesk-Timestamp` is the Unix time (seconds) of **this delivery attempt** — a retry is
   re-stamped and re-signed, so it can differ from the `timestamp` inside the body.
-- `X-Signature-256` is present only when the webhook has a **secret**. Without one there is no
-  signature, and nothing about the request proves it came from mooDesk — set a secret for any
-  endpoint that acts on what it receives.
+- `X-Signature-256` is present whenever the webhook has a **secret**, which every webhook
+  created since 2.33.0 has. A webhook marked *Unsigned* on the list sends none, and nothing
+  about its requests proves they came from mooDesk. Rotate its secret before any endpoint
+  acts on what it receives.
 - The signature is **HMAC-SHA256** over the string
   `‹X-Moodesk-Timestamp› + "." + ‹raw request body›`, keyed with the secret, encoded as
   **lowercase hexadecimal**, prefixed with `sha256=`.
@@ -412,12 +548,13 @@ middleware touches it.
   Moodle's privacy workflow. None of these needs configuration in mooDesk beyond the switches
   in [Configuration](./configuration).
 
-## Not supported in 2.30.0
+## Not supported
 
 | | Status |
 |---|---|
-| OAuth2 / `XOAUTH2` for IMAP — and therefore Microsoft 365 / Exchange Online mailboxes | Not implemented |
-| STARTTLS on IMAP | Not implemented; use implicit TLS on 993 |
+| OAuth 2.0 for the mailbox with a provider other than Google or Microsoft | Not available; such mailboxes use *Password* |
+| App-only (client credentials) access to a Microsoft 365 mailbox | Not available; OAuth 2.0 uses a Moodle OAuth 2 service's system account |
+| Accepting a mailbox certificate the server's trust store rejects | Not available; both TLS modes verify the certificate |
 | POP3 | Not implemented |
 | Sender-authentication profiles other than Gmail / Google Workspace | Only *Other mail server* with the operator's assertion |
 | Automatic account creation for unknown senders | By design: mail from an address with no active Moodle account is refused |
@@ -426,4 +563,4 @@ middleware touches it.
 
 ---
 
-*Verified against mooDesk 2.30.0.*
+*Verified against mooDesk 2.38.1.*

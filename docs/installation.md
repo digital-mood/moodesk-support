@@ -17,10 +17,10 @@ edition is set by the licence key after installation, not by which ZIP you insta
 
 | Requirement | Minimum | Notes |
 |---|---|---|
-| Moodle | **4.5 LTS** (`2024100700`) | Moodle 4.1–4.4 are end-of-life and not supported. Verified on 4.5, 5.0, 5.1 and 5.2. |
-| PHP | **8.1** (declared minimum) | PHP 8.1 is the declared minimum. The mooDesk CI matrix validates **PHP 8.2, 8.3 and 8.4**; 8.1 is not part of that matrix. |
-| Database | MariaDB 10.6+, PostgreSQL 13+, MySQL 8.0+ | These are Moodle's own requirements; mooDesk adds none. **MariaDB and PostgreSQL** are covered by the mooDesk CI matrix. MySQL 8.0+ is listed as supported, but it is not currently covered by the mooDesk CI matrix. |
-| PHP extensions | None beyond Moodle's | The PHP `imap` extension is **not** required — email ingestion talks IMAP over TLS sockets. |
+| Moodle | **4.5 LTS** (`2024100700`) | Moodle 4.1–4.4 are end-of-life and not supported. Verified on 4.5, 5.0, 5.1 and 5.2. Connecting a **Microsoft 365** mailbox for email ingestion (Pro) needs **Moodle 4.5.5, 5.0.1 or later**. mooDesk detects an older version and says so on the settings page. |
+| PHP | **8.1** (declared minimum) | Every change is tested on **PHP 8.2, 8.3 and 8.4**; PHP 8.1 is tested on the main branch, on Moodle 4.5. These minimums are Moodle 4.5's own: Moodle 5.0 needs PHP 8.2, MariaDB 10.11 and PostgreSQL 14, and Moodle 5.2 needs PHP 8.3 and PostgreSQL 16, so your real minimum is the higher of the two. |
+| Database | MariaDB 10.6.7+, PostgreSQL 13+ | mooDesk supports **MariaDB and PostgreSQL**, the databases every release is tested on (MariaDB 10.11 and PostgreSQL 16, plus MariaDB 10.6.7 and PostgreSQL 13 on Moodle 4.5). Since 2.38.0, MySQL is no longer listed as a supported database. |
+| PHP extensions | None beyond Moodle's | The PHP `imap` extension is **not** required: email ingestion has its own IMAP client. |
 | Outgoing mail | Configured in Moodle | Ticket notifications, SLA alerts and operator alerts are sent through Moodle's messaging. |
 | Cron | Running | Every background job (SLA checks, auto-close, mail ingestion, webhooks, retention) is a Moodle scheduled task. |
 | Web services | Enabled — Enterprise only | Only the Enterprise REST API needs Moodle web services and the REST protocol switched on. See [API](./api). |
@@ -32,7 +32,7 @@ Composer step and nothing to install on the server.
 ## Getting the package
 
 mooDesk is distributed as a single ZIP named `local_moodesk-<version>.zip` — for example
-`local_moodesk-2.30.0.zip`. The same package runs as Starter, Pro or Enterprise depending on
+`local_moodesk-2.38.1.zip`. The same package runs as Starter, Pro or Enterprise depending on
 the licence you activate afterwards.
 
 <!-- TODO: add official mooDesk download URL when available -->
@@ -85,7 +85,7 @@ Running the install once:
 ## Verifying the installation
 
 1. **Site administration → Plugins → Plugins overview**, section *Local plugins*: **mooDesk**
-   is listed with its version (for this release, `2.30.0`) and the status *Up to date*.
+   is listed with its version (for this release, `2.38.1`) and the status *Up to date*.
 2. **Site administration → Plugins → Local plugins** now contains a **mooDesk** settings page
    plus entries for *License status* and *Departments* (more appear as you gain the
    corresponding capabilities).
@@ -186,6 +186,8 @@ Before upgrading:
 
 - Read the [changelog](./changelog) for every version between yours and the new one. It
   names every change in behaviour and any step you need to take.
+- **Upgrading to 2.37.0 or later from an earlier version on Pro or Enterprise:** get a
+  re-issued licence from digitalMood first (see below).
 - Take a backup of the Moodle database as you would for any plugin upgrade.
 
 What to know about the upgrade itself:
@@ -200,18 +202,34 @@ What to know about the upgrade itself:
 - Your settings, licence, roles, tickets and articles are kept. Any new setting starts at its
   default.
 
+::: warning 2.37.0 replaced the licence signing key: re-issue your licence
+mooDesk 2.37.0 trusts only a new licence signing key. A licence issued before 2.37.0 was signed
+with the previous key, so after the upgrade *mooDesk → License* shows **`untrusted_key`** and
+the site runs as **Starter** until a re-issued licence is pasted under *Licence key*. Nothing is
+deleted: Pro and Enterprise data stays in the database and comes back with the new licence.
+Ask digitalMood for the re-issued licence **before** upgrading, and paste it right after.
+:::
+
 ### After the upgrade
 
 1. **Plugins overview** shows the new version and *Up to date*.
 2. **mooDesk → System health** reads *Everything is working*. An upgrade that left something
    broken shows up here first.
-3. **mooDesk → License**: your edition is still the one you expect. A licence issued for an
-   earlier version keeps working.
+3. **mooDesk → License**: your edition is still the one you expect. If it shows
+   `untrusted_key`, paste the licence re-issued for 2.37.0 (see the warning above). Other
+   licences keep working across upgrades.
 4. **Scheduled tasks**: any task added by the new version is listed and enabled.
-5. If you use **email ingestion**: a site that upgrades to a version with reply
-   authentication starts on *Prefer token* rather than the stricter *Require token* a fresh
-   install gets, so existing mail-based replies keep working. Review the setting once your
-   reply address is configured — see [Integrations](./integrations).
+5. If you use **email ingestion**:
+   - A site that upgrades to a version with reply authentication starts on *Prefer token*
+     rather than the stricter *Require token* a fresh install gets, so existing mail-based
+     replies keep working. Review the setting once your reply address is configured. See
+     [Integrations](./integrations).
+   - Upgrading to 2.36.0 carries *Use SSL/TLS* over as *Connection security*: on becomes
+     *SSL/TLS*, off becomes *None*. No mailbox changes how it is reached.
+   - Upgrading to 2.37.0 leaves *Authentication* on *Password*, and the first poll afterwards
+     re-scans each folder once, 14 days back. Messages already ingested are recognised and
+     not ingested again. See
+     [How mooDesk reads the mailbox](./integrations#how-moodesk-reads-the-mailbox).
 6. If you upgrade from **2.22.0 or earlier** and use the **REST API**: issuing a token for
    another user now requires `moodle/webservice:managealltokens` in addition to
    `local/moodesk:useapi`. Tokens issued before the upgrade are left untouched; as a site
@@ -222,16 +240,20 @@ What to know about the upgrade itself:
 
 **Outbound connections.** On its own, mooDesk makes one kind of outbound request: once a day,
 `refresh_revocation_list` downloads the signed licence revocation list from the URL set in
-the plugin's *License* settings (by default `https://licenses.moodesk.io/crl/revocations.json`
-and its `.sig` companion). The request is a plain download of a public file; it carries no
-site URL, no licence, no user data. If the host is unreachable the last valid list is kept,
-and a list that fails verification is rejected. You can switch the check off with the
-*Revocation check* setting, and you will need to allow outbound HTTPS to that host if your
+the plugin's *License* settings (by default
+`https://licenses.moodesk.io/crl/v2/revocations.json` since 2.37.0, and its `.sig`
+companion). The request is a plain
+download of a public file; it carries no site URL, no licence, no user data. If the host is
+unreachable the last valid list is kept, and a list that is not signed by a key this version
+trusts is rejected. Upgrading to 2.37.0 moves a site still on the previous default URL to the
+new one, and discards the list it held. You can switch the check off with the
+*Check for revoked licences* setting, and you will need to allow outbound HTTPS to that host if your
 server is behind an egress firewall.
 
 No other data leaves the site unless an administrator configures an outbound **webhook**
 (Enterprise) or an **IMAP mailbox** (Pro), and those talk only to the endpoints the
-administrator entered.
+administrator entered. A mailbox signed in with OAuth 2.0 also uses the Moodle OAuth 2 service
+it names: Moodle itself obtains and renews the access token from Google or Microsoft.
 
 **Personal data.** mooDesk implements Moodle's Privacy API. Data export and erasure requests
 run through the standard workflow under **Site administration → Users → Privacy and
@@ -253,4 +275,4 @@ is left in place with its mooDesk capabilities removed; a later reinstall restor
 
 ---
 
-*Verified against mooDesk 2.30.0.*
+*Verified against mooDesk 2.38.1.*
