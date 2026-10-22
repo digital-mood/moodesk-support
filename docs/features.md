@@ -19,11 +19,12 @@ decide what is on the screen.
 Three editions, cumulative — each one includes everything below it. The edition is set by
 the licence key ([Configuration → License](./configuration#license)); with no key a site runs
 as **Starter**. Screens that belong to a higher edition stay visible and show an upgrade
-notice instead of their content.
+notice instead of their content. The agent capacity is written in the licence, and every
+edition has one ([Configuration → Agents](./configuration#agents)).
 
 | | Starter | <Badge type="tip" text="Pro" /> | <Badge type="warning" text="Enterprise" /> |
 |---|:---:|:---:|:---:|
-| Active agents | 2 | 10 | unlimited |
+| Agent capacity | 2 | 10 to 25, as on the licence | 50 to 1000, as on the licence |
 | Tickets, queue, saved views, bulk actions | ✓ | ✓ | ✓ |
 | Categories, departments | ✓ | ✓ | ✓ |
 | SLA targets and indicators | ✓ | ✓ | ✓ |
