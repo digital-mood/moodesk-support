@@ -342,4 +342,4 @@ A green health page — and the habit of opening it.
 
 ---
 
-*Verified against mooDesk 2.38.1.*
+*Verified against mooDesk 2.39.0.*

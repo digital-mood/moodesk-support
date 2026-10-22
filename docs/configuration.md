@@ -523,13 +523,13 @@ and an `sla_breached` rule.
 
 ## Known limitations
 
-Configuration that exists in 2.38.1 but does not do what its label suggests:
+Configuration that exists in 2.39.0 but does not do what its label suggests:
 
-| Where | What | Status in 2.38.1 |
+| Where | What | Status in 2.39.0 |
 |---|---|---|
 | Automations | `time_elapsed` trigger | Stored, never evaluated |
 | Scheduled tasks | `sync_license` | Registered and enabled; performs no work |
 
 ---
 
-*Verified against mooDesk 2.38.1.*
+*Verified against mooDesk 2.39.0.*

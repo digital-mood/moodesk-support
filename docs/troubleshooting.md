@@ -224,7 +224,7 @@ as they are and record nothing.
 
 ## Incident reference
 
-Every code mooDesk can write to System Health in 2.38.1, by source. *Retried* says whether
+Every code mooDesk can write to System Health in 2.39.0, by source. *Retried* says whether
 mooDesk itself will try the failed operation again; where it says *no*, the fix is on you and
 the operation has to be redone by hand (or will simply happen next time the event occurs).
 
@@ -319,4 +319,4 @@ addresses, hostnames and IDs before attaching them.
 
 ---
 
-*Verified against mooDesk 2.38.1.*
+*Verified against mooDesk 2.39.0.*

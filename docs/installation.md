@@ -32,7 +32,7 @@ Composer step and nothing to install on the server.
 ## Getting the package
 
 mooDesk is distributed as a single ZIP named `local_moodesk-<version>.zip` — for example
-`local_moodesk-2.38.1.zip`. The same package runs as Starter, Pro or Enterprise depending on
+`local_moodesk-2.39.0.zip`. The same package runs as Starter, Pro or Enterprise depending on
 the licence you activate afterwards.
 
 <!-- TODO: add official mooDesk download URL when available -->
@@ -85,7 +85,7 @@ Running the install once:
 ## Verifying the installation
 
 1. **Site administration → Plugins → Plugins overview**, section *Local plugins*: **mooDesk**
-   is listed with its version (for this release, `2.38.1`) and the status *Up to date*.
+   is listed with its version (for this release, `2.39.0`) and the status *Up to date*.
 2. **Site administration → Plugins → Local plugins** now contains a **mooDesk** settings page
    plus entries for *License status* and *Departments* (more appear as you gain the
    corresponding capabilities).
@@ -309,4 +309,4 @@ is left in place with its mooDesk capabilities removed; a later reinstall restor
 
 ---
 
-*Verified against mooDesk 2.38.1.*
+*Verified against mooDesk 2.39.0.*

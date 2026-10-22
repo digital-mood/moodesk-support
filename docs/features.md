@@ -140,7 +140,7 @@ article link** into the reply.
 | Create article <Badge type="tip" text="Pro" /> | Start a knowledge base draft pre-filled from this ticket |
 
 **Audit trail.** Every change — creation, status, priority, assignment, category,
-department, team, replies, merges — is recorded with who did it and when. In 2.38.1 the
+department, team, replies, merges — is recorded with who did it and when. In 2.39.0 the
 trail is kept and exported with the user's data, but it is **not shown on the ticket page**.
 
 ### Ticket lifecycle
@@ -186,7 +186,7 @@ the draft still has to be published by someone with the publishing capability �
 Two tickets about the same thing become one. From the duplicate's sidebar, *Merge* opens the
 merge page: type in *Target* to search for the ticket to keep, then review the **preview** —
 what will be linked, and any conflict such as different requesters, different SLA states or
-different custom field values — and confirm. (In 2.38.1 and earlier, searching in *Target*
+different custom field values — and confirm. (In 2.38.1, searching in *Target*
 showed no results; 2.39.0 fixes it.)
 
 - Nothing is copied: the duplicate's replies, notes and attachments stay where they are and
@@ -366,7 +366,7 @@ mooDesk implements Moodle's privacy API, so a site's existing data-request workf
 What leaves the server, and what does not, is under
 [Installation → Network and privacy](./installation#network-and-privacy).
 
-## Not yet in 2.38.1
+## Not yet in 2.39.0
 
 One feature on this page exists but is incomplete in this release. It is detailed under
 [Configuration → Known limitations](./configuration#known-limitations):
@@ -375,4 +375,4 @@ One feature on this page exists but is incomplete in this release. It is detaile
 
 ---
 
-*Verified against mooDesk 2.38.1.*
+*Verified against mooDesk 2.39.0.*
