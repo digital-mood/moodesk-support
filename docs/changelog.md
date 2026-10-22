@@ -17,6 +17,73 @@ The public changelog starts at **2.34.0**. Earlier releases are not listed here.
 
 <!-- Add new releases directly below this line, newest first, with the same headings. -->
 
+## 2.39.0 — 2026-10-20
+
+::: warning Before you upgrade
+A licence issued in the earlier licence format is not accepted by 2.39.0. Read the
+[upgrade notes](#upgrade-notes-2-39-0) and
+[Installation → Upgrading](./installation#upgrading) first.
+:::
+
+### Changed
+
+- **Licences use a new format that carries the agent capacity.** A licence is accepted only when
+  it is in the current format and states an agent capacity that its plan allows: Pro 10, 15, 20
+  or 25 agents; Enterprise from 50 to 1000 agents, in steps of 25. *License status* says when a
+  licence was issued for an earlier licence format, or does not state a valid agent capacity for
+  its plan. In both cases the site runs as Starter, nothing is deleted, and the page says to ask
+  digitalMood for a replacement licence.
+- **The number of agents comes from your licence.** Starter, without a licence, allows 2 agents.
+  Pro and Enterprise allow the capacity written in the licence. No edition is unlimited any more.
+  *Add agent* stops at the capacity and says what to do next: get a licence, add an agent block,
+  move to Enterprise, or contact digitalMood above 1000 agents.
+- **License status and System health show how the capacity is made up**, for example
+  `12 / 15 agents (10 included + 1 block)`. Agents given the agent role through Moodle's own
+  screens are counted but not blocked. A site above its capacity keeps every agent: it shows
+  *Agent limit exceeded* and no new agent can be added until the count is back under the
+  capacity. No agent is ever removed.
+- **The plan comes from the licence only.** The edition setting is no longer mentioned in the
+  upgrade prompts, and the "Unlimited" agent label and the "License claim ignored" note are gone.
+- **The Spanish translation uses neutral Spanish throughout.** A few strings still used regional
+  forms. Wording only: nothing else changed.
+
+### Fixed
+
+- **Searching for the target ticket on the merge page works again.** Typing in *Target* showed
+  no results, so a merge could not be completed from the interface (Enterprise).
+- **A ticket that was merged into another no longer accepts changes to its custom fields.** It
+  shows them read-only, as the rest of a merged ticket already is. Before, its values could still
+  be saved, without leaving anything in the ticket's history.
+- **A merged ticket shows its properties as values, not as menus.** Its status, priority,
+  category, department, team and assignee were still offered as menus, and any change ended in
+  an error. The merge target and a ticket whose merge was undone keep their menus.
+- **Undoing a merge is recorded in both tickets.** Each conversation now ends with a note that
+  the merge was undone, and the reopened ticket's history shows its status going back. No one is
+  notified, and no satisfaction survey, automation rule or webhook is triggered by these notes.
+
+### Upgrade notes {#upgrade-notes-2-39-0}
+
+::: warning Replace a licence in the earlier format before upgrading
+After the upgrade, *License status* reports a licence issued in the earlier format as not
+accepted by this version of mooDesk, and the site runs as Starter until a replacement licence is
+pasted. Nothing is lost in the meantime, and every existing agent is kept. Ask digitalMood for a
+replacement licence that states the number of agents you need.
+
+On 2.38.1 you can paste the replacement **before** upgrading: 2.38.1 accepts it and keeps its own
+agent limits until the upgrade, and the *License status* page of 2.38.1 may show the agent count
+as "License claim ignored", which is expected. That note belongs to 2.38.1 only. The new capacity
+applies once the upgrade is done.
+
+For upgrades from versions earlier than 2.38.1, contact digitalMood for guidance before proceeding.
+
+A site running as Starter without a licence needs no action.
+:::
+
+- **Check your agent count against the capacity of your licence.** A site with more agents than
+  its licence allows, for example an Enterprise site with more than 50 agents and a 50-agent
+  licence, keeps every agent after the upgrade, shows *Agent limit exceeded*, and cannot add new
+  agents. Ask for a licence with the capacity you need, ideally before upgrading.
+
 ## 2.38.1 — 2026-10-08
 
 ### Fixed
