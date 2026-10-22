@@ -55,8 +55,17 @@ revalidates immediately — [Configuration → License](./configuration#license)
 
 **I pasted the key and nothing unlocked.**
 The License page names the reason — *malformed*, *forged*, *untrusted_key*, *expired*,
-*revoked*, *site_mismatch* — and each is explained in [Configuration → License](./configuration#license).
-The site keeps running as Starter in the meantime and nothing is lost.
+*revoked*, *site_mismatch*, a licence issued for an earlier licence format, or a licence that
+does not state a valid agent capacity for its plan — and each is explained in
+[Configuration → License](./configuration#license). The site keeps running as Starter in the
+meantime, nothing is lost and every agent is kept.
+
+**After upgrading to 2.39.0 the site runs as Starter.**
+2.39.0 accepts only licences in the current format, which states the agent capacity. A licence
+issued in the earlier format shows *This licence was issued for an earlier licence format and
+is not accepted by this version of mooDesk*. Ask digitalMood for a replacement licence and paste
+it under *Licence key*. Nothing is deleted and every agent is kept in the meantime —
+[Installation → Upgrading](./installation#upgrading).
 
 **After upgrading to 2.37.0 the site runs as Starter.**
 2.37.0 replaced the licence signing key, so a licence issued before it shows *untrusted_key*.
@@ -68,11 +77,20 @@ No. The key is bound to one site URL; on any other it is refused as *site_mismat
 copy runs as Starter. A staging site needs its own key.
 
 **How many agents can I have?**
-**2** on Starter, **10** on Pro, **unlimited** on Enterprise. An *active agent* is a user who
-holds `local/moodesk:agent` and is neither suspended nor deleted. *Add agent* stops at the cap;
-agents given the role through Moodle's own role screens are counted but not blocked, and a
-site over its cap keeps every agent working while the License page and System Health show
-*Agent limit exceeded* — [Configuration → Agents](./configuration#agents).
+As many as the capacity on your licence. Starter, without a licence, allows **2**. Pro allows
+the capacity on its licence: **10, 15, 20 or 25**. Enterprise allows **50 to 1000**, in steps
+of 25. Every edition has a fixed capacity; for more than 1000 agents, contact digitalMood. An *active
+agent* is a user who holds `local/moodesk:agent` and is neither suspended nor deleted. *Add
+agent* stops at the capacity and names the way out for your plan; agents given the role through
+Moodle's own role screens are counted but not blocked —
+[Configuration → Agents](./configuration#agents).
+
+**What happens if my site has more agents than its capacity?**
+Nothing is removed. This can happen after an upgrade, or when a licence with a smaller capacity
+is pasted. Every agent is kept and keeps working; the License page and System Health show
+*Agent limit exceeded* and *No agent has been removed. New agents cannot be added until the
+count is back under the capacity.* Get a licence with the capacity you need, or bring the count
+under it.
 
 **What happens to Pro or Enterprise data if the licence expires?**
 Nothing is deleted. Teams, custom fields, rules, ratings, articles, webhooks and tokens stay in
@@ -138,7 +156,7 @@ closed it. Set the value to `0` to stop it — [Configuration → Automation](./
 
 **Is there an audit trail of changes to a ticket?**
 Yes: every change is written to the ticket's history and included in the user's privacy
-export. The history is **not shown on the ticket page** in 2.38.1.
+export. The history is **not shown on the ticket page** in 2.39.0.
 
 **Can tickets be merged?**
 On Enterprise. A duplicate is merged into a target and becomes read-only; the merge can be
@@ -183,7 +201,7 @@ the window the same Message-ID, or the same sender and subject, is dropped as a 
 
 **Can a rule fire twice on the same ticket?**
 No. Each rule fires **at most once per ticket**, whatever the trigger, and the outcome is
-logged. A rule with the `time_elapsed` trigger never fires in 2.38.1: it can be saved but is
+logged. A rule with the `time_elapsed` trigger never fires in 2.39.0: it can be saved but is
 not evaluated — [Configuration → Automations](./configuration#automations).
 
 **What fires the `ticket.updated` webhook?**
@@ -290,4 +308,4 @@ Contact digitalMood for licensing and support information.
 
 ---
 
-*Verified against mooDesk 2.38.1.*
+*Verified against mooDesk 2.39.0.*

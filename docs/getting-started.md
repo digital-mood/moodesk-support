@@ -41,20 +41,24 @@ Full system requirements (PHP, database versions) are listed under
 ### Editions
 
 mooDesk ships as a single package. With no licence it runs as the free **Starter** edition; a
-licence key unlocks **Pro** or **Enterprise**. The quick start marks the steps that only apply
-to a paid edition. Every edition allows a different number of active agents:
+licence key unlocks **Pro** or **Enterprise**. The licence decides the edition; there is no
+edition setting. The quick start marks the steps that only apply to a paid edition. The number
+of active agents comes from the licence:
 
-| Edition | Active agents |
+| Edition | Agent capacity |
 |---|---|
 | Starter | up to 2 |
-| Pro | up to 10 |
-| Enterprise | unlimited |
+| Pro | as on the licence: 10, 15, 20 or 25 |
+| Enterprise | as on the licence: 50 to 1000, in steps of 25 |
+
+Every edition has a fixed capacity; for more than 1000 agents, contact digitalMood. See
+[Configuration → Agents](./configuration#agents).
 
 See [Features](./features) for what each edition includes.
 
 ### Who does what
 
-- **Site administrator** — installs the plugin, sets the edition, configures settings and
+- **Site administrator** — installs the plugin, pastes the licence key, configures settings and
   roles. That is you, for this page.
 - **Agents** — the people who work the ticket queue. mooDesk creates a role for them.
 - **Requesters** — anyone with a Moodle account. They can open tickets and read published
@@ -67,7 +71,7 @@ Steps 7 and 8 are optional. Times are rough estimates for a first-time setup.
 | # | Step | Time |
 |---|---|---|
 | 1 | [Install the plugin](#_1-install-the-plugin) | 5 min |
-| 2 | [Pick the edition](#_2-pick-the-edition) | 3 min |
+| 2 | [Paste the licence](#_2-paste-the-licence) | 3 min |
 | 3 | [Roles](#_3-roles) | 5 min |
 | 4 | [Departments and categories](#_4-departments-and-categories) | 5 min |
 | 5 | [Add your agents](#_5-add-your-agents) | 5 min |
@@ -103,27 +107,30 @@ and a **mooDesk** entry in the site administration menu.
 More detail, including upgrading and the full list of capabilities and scheduled tasks:
 [Installation](./installation).
 
-## 2. Pick the edition
+<span id="_2-pick-the-edition"></span>
 
-A fresh install runs as **Starter**: free, no licence, up to 2 active agents. If that is what
-you want, skip to step 3.
+## 2. Paste the licence
 
-For **Pro** or **Enterprise**, digitalMood issues a licence key for your site. A licence is
-tied to the site URL it was issued for, so a key issued for production will not activate on a
-staging copy.
+The licence decides the edition; there is no edition setting to choose. A fresh install runs
+as **Starter**: free, no licence, up to 2 active agents. If that is what you want, skip to
+step 3.
+
+For **Pro** or **Enterprise**, digitalMood issues a licence key for your site. The licence
+states the plan and the agent capacity. It is tied to the site URL it was issued for, so a key
+issued for production will not activate on a staging copy.
 
 1. Go to **Site administration → Plugins → Local plugins → mooDesk**. In the **License**
    section, paste the key into *Licence key* and save.
 2. Open **mooDesk → License**. The status banner should read *Licence is valid*, *Effective
-   edition* should show the edition you licensed, and the *Agents* row shows
-   `active / limit` for that edition.
+   edition* should show the edition you licensed, and the *Agents* row shows the active agents
+   against the capacity on the licence, for example `3 / 15 agents (10 included + 1 block)`.
 
 If the key is malformed, expired, revoked, signed for another site, signed with a key this
-version no longer trusts (any licence issued before 2.37.0 shows `untrusted_key`), or otherwise
-refused, the License page says which. The site keeps running as Starter and nothing is lost — contact
-digitalMood for a re-issue. A note reading *License claim ignored: N* beside the Agents row
-means the key carries an agent number that is not part of the edition's contract; the
-edition's limit is what applies.
+version no longer trusts (any licence issued before 2.37.0 shows `untrusted_key`), issued in an
+earlier licence format, or does not state a valid agent
+capacity for its plan, the License page says which. The site keeps running as Starter and
+nothing is lost — contact digitalMood for a replacement licence. See
+[Configuration → License](./configuration#license).
 
 ::: tip You have
 The edition you intend to run, shown on the License page.
@@ -177,11 +184,12 @@ Then put each agent in their department(s) from **mooDesk → Departments → me
 also from the agent's own panel, together with teams). An agent who is in no department and no
 team cannot be assigned any ticket, and the agent directory flags this.
 
-The *Add agent* screen shows the edition's limit before you pick anyone. At the limit the
-button is disabled: remove an agent or move to a bigger edition. Agents given the role through
-Moodle's own role screens are counted too; if that takes the site over its limit, every agent
-keeps working, the License and System Health pages show *Agent limit exceeded*, and mooDesk
-will not add another agent until the site is back under the limit.
+At the agent capacity of your licence, the *Add agent* screen says so before you pick anyone
+and the buttons are disabled. The notice names the way out for your plan: get a licence, add an
+agent block, move to Enterprise, or contact digitalMood above 1000 agents. Agents given the role
+through Moodle's own role screens are counted too; if that takes the site over its capacity,
+every agent is kept and keeps working, the License and System Health pages show *Agent limit
+exceeded*, and mooDesk will not add another agent until the site is back under the capacity.
 
 ::: tip You have
 Your agents listed under **mooDesk → Agents**, each in a department.
@@ -335,4 +343,4 @@ A green health page — and the habit of opening it.
 
 ---
 
-*Verified against mooDesk 2.38.1.*
+*Verified against mooDesk 2.39.0.*

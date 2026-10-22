@@ -96,11 +96,13 @@ cause is documented elsewhere, the link is the fix.
 
 | Symptom | Usual cause | Confirm | Do |
 |---|---|---|---|
-| A Pro or Enterprise screen shows an upgrade prompt on a licensed site | The key is refused, so the site is Starter | *mooDesk → License* shows a verdict other than *valid* | Read the verdict: *malformed*, *forged*, *untrusted_key*, *expired*, *revoked*, *site_mismatch*. Each is explained in [Configuration → License](./configuration#license) |
+| A Pro or Enterprise screen shows an upgrade prompt on a licensed site | The key is refused, so the site is Starter | *mooDesk → License* shows a verdict other than *valid* | Read the verdict: *malformed*, *forged*, *untrusted_key*, *expired*, *revoked*, *site_mismatch*, an earlier licence format, or no valid agent capacity. Each is explained in [Configuration → License](./configuration#license) |
 | The site runs as Starter right after upgrading to 2.37.0 | The licence was issued before 2.37.0, which replaced the licence signing key | The verdict says *untrusted_key* | Ask digitalMood for a re-issued licence and paste it under *Licence key*. Nothing was deleted: Pro and Enterprise data comes back with a valid key. See the [2.37.0 upgrade notes](./changelog) |
 | It worked yesterday; today it is Starter | The key expired, or the revocation list now lists it | The verdict says *expired* or *revoked* | Contact digitalMood for a renewed key; paste it under *Licence key*, which revalidates on save |
 | *site_mismatch* on a site that has the right key | The key was issued for another URL — a staging copy of production is the usual case | The verdict names it | A key is bound to one site URL; staging needs its own |
-| *Agent limit exceeded* on License and System Health | More active agents than the licence allows | *Entitlement* block on System Health shows `active / limit` | Nothing stops working; offboard agents or extend the licence — [Configuration → Agents](./configuration#agents) |
+| *License status* reads *This licence was issued for an earlier licence format and is not accepted by this version of mooDesk. Ask digitalMood for a replacement licence — running as Starter* | The licence was issued in the format used before 2.39.0, which 2.39.0 no longer accepts | The message names it | Ask digitalMood for a replacement licence and paste it under *Licence key*. Nothing was deleted and every agent is kept. See [Installation → Upgrading to 2.39.0](./installation#upgrading-to-2-39-0) |
+| *License status* reads *This licence does not state a valid agent capacity for its plan. Ask digitalMood for a replacement licence — running as Starter* | The licence does not state an agent capacity its plan allows (Pro 10, 15, 20 or 25; Enterprise 50 to 1000 in steps of 25) | The message names it | Ask digitalMood for a replacement licence. Nothing was deleted and every agent is kept in the meantime |
+| *Agent limit exceeded* on License and System Health, with *No agent has been removed. New agents cannot be added until the count is back under the capacity.* | More active agents than the capacity on the licence — for example after an upgrade, a licence with a smaller capacity, or agents given the role through Moodle's own screens | The *Agents* row shows the active agents above the capacity, for example `12 / 10 agents` | Every agent is kept and keeps working, but none can be added. Get a licence with the capacity you need, or bring the count under the capacity — [Configuration → Agents](./configuration#agents) |
 | The revocation check never runs | Outbound HTTPS blocked, or `revocation_enabled` off | Task log of `refresh_revocation_list` | Allow `licenses.moodesk.io` — [Installation → Network and privacy](./installation#network-and-privacy) |
 | `sync_license` runs and does nothing | Expected: the task is registered but performs no work in this release | — | Nothing; see [Configuration → Known limitations](./configuration#known-limitations) |
 
@@ -222,7 +224,7 @@ as they are and record nothing.
 
 ## Incident reference
 
-Every code mooDesk can write to System Health in 2.38.1, by source. *Retried* says whether
+Every code mooDesk can write to System Health in 2.39.0, by source. *Retried* says whether
 mooDesk itself will try the failed operation again; where it says *no*, the fix is on you and
 the operation has to be redone by hand (or will simply happen next time the event occurs).
 
@@ -317,4 +319,4 @@ addresses, hostnames and IDs before attaching them.
 
 ---
 
-*Verified against mooDesk 2.38.1.*
+*Verified against mooDesk 2.39.0.*

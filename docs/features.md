@@ -19,11 +19,12 @@ decide what is on the screen.
 Three editions, cumulative — each one includes everything below it. The edition is set by
 the licence key ([Configuration → License](./configuration#license)); with no key a site runs
 as **Starter**. Screens that belong to a higher edition stay visible and show an upgrade
-notice instead of their content.
+notice instead of their content. The agent capacity is written in the licence, and every
+edition has one ([Configuration → Agents](./configuration#agents)).
 
 | | Starter | <Badge type="tip" text="Pro" /> | <Badge type="warning" text="Enterprise" /> |
 |---|:---:|:---:|:---:|
-| Active agents | 2 | 10 | unlimited |
+| Agent capacity | 2 | 10 to 25, as on the licence | 50 to 1000, as on the licence |
 | Tickets, queue, saved views, bulk actions | ✓ | ✓ | ✓ |
 | Categories, departments | ✓ | ✓ | ✓ |
 | SLA targets and indicators | ✓ | ✓ | ✓ |
@@ -139,7 +140,7 @@ article link** into the reply.
 | Create article <Badge type="tip" text="Pro" /> | Start a knowledge base draft pre-filled from this ticket |
 
 **Audit trail.** Every change — creation, status, priority, assignment, category,
-department, team, replies, merges — is recorded with who did it and when. In 2.38.1 the
+department, team, replies, merges — is recorded with who did it and when. In 2.39.0 the
 trail is kept and exported with the user's data, but it is **not shown on the ticket page**.
 
 ### Ticket lifecycle
@@ -182,19 +183,26 @@ the draft still has to be published by someone with the publishing capability �
 
 ### Merging duplicates <Badge type="warning" text="Enterprise" />
 
-Two tickets about the same thing become one. From the target ticket's sidebar, *Merge* takes
-the duplicate's number, shows a **preview** — what will be linked, and any conflict such as
-different requesters, different SLA states or different custom field values — and asks for
-confirmation.
+Two tickets about the same thing become one. From the duplicate's sidebar, *Merge* opens the
+merge page: type in *Target* to search for the ticket to keep, then review the **preview** —
+what will be linked, and any conflict such as different requesters, different SLA states or
+different custom field values — and confirm. (In 2.38.1, searching in *Target*
+showed no results; 2.39.0 fixes it.)
 
 - Nothing is copied: the duplicate's replies, notes and attachments stay where they are and
   are **read through the link** on the target, labelled *From ticket #N*. The duplicate is
   closed.
 - A merged ticket is not "resolved": no CSAT survey is created for it and automation rules
   skip it.
-- **Undo** is available for **30 days** after the merge and restores the duplicate exactly.
-  Merging and undoing are two separate capabilities, so a role can be allowed to merge
-  without being allowed to unmerge. Both default to Moodle's *Manager* archetype.
+- On the duplicate, the properties (status, priority, category, department, team, assignee)
+  and the custom fields are shown as read-only values. They cannot be changed while the merge
+  stands. The target keeps its menus.
+- **Undo** is available for **30 days** after the merge and restores the duplicate, whose
+  properties and custom fields can be changed again. Undoing adds a note to the end of both
+  conversations saying that the merge was undone, and the reopened ticket's history shows its
+  status going back. These notes notify no one and trigger no satisfaction survey, automation
+  rule or webhook. Merging and undoing are two separate capabilities, so a role can be allowed
+  to merge without being allowed to unmerge. Both default to Moodle's *Manager* archetype.
 - Which of the two tickets may be the duplicate is governed by the *Merge ordering* setting
   ([Configuration → Automation](./configuration#automation)).
 
@@ -358,7 +366,7 @@ mooDesk implements Moodle's privacy API, so a site's existing data-request workf
 What leaves the server, and what does not, is under
 [Installation → Network and privacy](./installation#network-and-privacy).
 
-## Not yet in 2.38.1
+## Not yet in 2.39.0
 
 One feature on this page exists but is incomplete in this release. It is detailed under
 [Configuration → Known limitations](./configuration#known-limitations):
@@ -367,4 +375,4 @@ One feature on this page exists but is incomplete in this release. It is detaile
 
 ---
 
-*Verified against mooDesk 2.38.1.*
+*Verified against mooDesk 2.39.0.*

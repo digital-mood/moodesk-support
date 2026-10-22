@@ -51,9 +51,14 @@ In the order the settings page shows them. *Default* is the value a fresh instal
 | Check for revoked licences | `revocation_enabled` | Fetch the licence revocation list once a day. | on |
 | Revocation list URL | `revocation_crl_url` | Where the list is downloaded from. Since 2.37.0, upgrading moves a site still on the previous default to the new one; a URL you chose yourself is left alone. | `https://licenses.moodesk.io/crl/v2/revocations.json` |
 
+The licence is the only thing that decides the edition: there is no edition setting. Since
+2.39.0 a key is accepted only when it is in the current licence format **and** states an agent
+capacity that its plan allows (see [Agents](#agents)).
+
 After saving a key, open **mooDesk → License** (site administrators only). It shows the
-verdict, the effective edition, the expiry, and the *Agents* row as `active / limit`. When a
-key is refused the site keeps running as **Starter** — nothing is deleted, Pro and Enterprise
+verdict, the effective edition, the expiry, and the *Agents* row with the active agents
+against the capacity (see [Agents](#agents) for how it reads). When a key is refused the site
+keeps running as **Starter** — nothing is deleted, every agent is kept, Pro and Enterprise
 data stays in the database, and a valid key brings everything back. The page names the reason:
 
 | Status | Meaning |
@@ -65,10 +70,9 @@ data stays in the database, and a valid key brings everything back. The page nam
 | `expired` | The key is past its expiry date |
 | `revoked` | The key is on the revocation list |
 | `site_mismatch` | The key was issued for another site URL — a staging copy of production is the usual case |
+| *Issued for an earlier licence format* | The key was issued in the licence format used before 2.39.0, which this version does not accept. The page reads: *This licence was issued for an earlier licence format and is not accepted by this version of mooDesk. Ask digitalMood for a replacement licence — running as Starter*. Ask digitalMood for a replacement licence and paste it under *Licence key* |
+| *No valid agent capacity* | The key does not state an agent capacity its plan allows. The page reads: *This licence does not state a valid agent capacity for its plan. Ask digitalMood for a replacement licence — running as Starter*. Ask digitalMood for a replacement licence |
 | `nopubkey` | mooDesk cannot read its own verification key: a broken install, reinstall the package |
-
-A note *License claim ignored: N* beside the Agents row means the key carries an agent number
-that is not the edition's contract; the edition's limit is what applies.
 
 ### General
 
@@ -280,8 +284,10 @@ their departments, teams (Pro), open ticket count, and whether mooDesk manages t
 The list filters by department, team, status and managed / unmanaged, and warns about agents
 in no department and departments with no members.
 
-- **Add agent** — search a Moodle user, *Make agent*. The screen shows the edition's limit
-  before you pick anyone; at the limit the button is disabled.
+- **Add agent** — search a Moodle user, *Make agent*. At the capacity the screen says so
+  before you pick anyone, the buttons are disabled, and a grant is refused. The notice names
+  the way out for your plan, for example *This site has 2 of 2 agents allowed on Starter. Get
+  a Pro or Enterprise licence to add more agents.*
 - **Remove** — takes the role away and puts the agent's open tickets back in their
   departments' unassigned pool. Only agents mooDesk manages (those holding the *mooDesk
   Agent* role) can be removed here; an agent who holds the capability through another role
@@ -291,15 +297,28 @@ in no department and departments with no members.
 
 Who counts as an agent: anyone holding `local/moodesk:agent` at system context who is neither
 suspended nor deleted. Agents given the role through Moodle's own screens, an SSO mapping or
-a script are counted but not managed by mooDesk: if that takes the site over its limit, every
-agent keeps working, the License and System Health pages say *Agent limit exceeded*, and
-*Add agent* refuses until the site is back under.
+a script are counted but not managed by mooDesk.
 
-| Edition | Active agents |
+The agent capacity comes from the licence, and every edition has one:
+
+| Edition | Agent capacity |
 |---|---|
-| Starter | 2 |
-| Pro | 10 |
-| Enterprise | unlimited |
+| Starter (no licence, or no valid licence) | 2 |
+| Pro | The capacity on the licence: 10, 15, 20 or 25 (10 included, plus blocks of 5) |
+| Enterprise | The capacity on the licence: 50 to 1000, in steps of 25 (50 included, plus blocks of 25) |
+
+For more than 1000 agents, contact digitalMood.
+
+The License and System Health pages show the active agents against the capacity and how the
+capacity is made up, for example `12 / 15 agents (10 included + 1 block)`, or `1 / 2 agents`
+when there is no block.
+
+A site can end up **over its capacity**, for example after an upgrade, after a licence with a
+smaller capacity is pasted, or when agents are given the role outside mooDesk. Every agent is
+kept and keeps working: the License and System Health pages show *Agent limit exceeded* with
+*No agent has been removed. New agents cannot be added until the count is back under the
+capacity.* To add agents again, get a licence with the capacity you need, or bring the count
+under the capacity.
 
 An agent must be a member of a department to be assigned its tickets. An agent in no
 department and no team cannot be assigned anything, and the directory says so.
@@ -504,13 +523,13 @@ and an `sla_breached` rule.
 
 ## Known limitations
 
-Configuration that exists in 2.38.1 but does not do what its label suggests:
+Configuration that exists in 2.39.0 but does not do what its label suggests:
 
-| Where | What | Status in 2.38.1 |
+| Where | What | Status in 2.39.0 |
 |---|---|---|
 | Automations | `time_elapsed` trigger | Stored, never evaluated |
 | Scheduled tasks | `sync_license` | Registered and enabled; performs no work |
 
 ---
 
-*Verified against mooDesk 2.38.1.*
+*Verified against mooDesk 2.39.0.*
