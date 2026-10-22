@@ -186,6 +186,9 @@ Before upgrading:
 
 - Read the [changelog](./changelog) for every version between yours and the new one. It
   names every change in behaviour and any step you need to take.
+- **Upgrading to 2.39.0 or later on Pro or Enterprise:** your licence must be in the current
+  licence format. Get a replacement licence from digitalMood first, and compare your active
+  agents with its capacity (see [Upgrading to 2.39.0](#upgrading-to-2-39-0)).
 - **Upgrading to 2.37.0 or later from an earlier version on Pro or Enterprise:** get a
   re-issued licence from digitalMood first (see below).
 - Take a backup of the Moodle database as you would for any plugin upgrade.
@@ -210,14 +213,45 @@ deleted: Pro and Enterprise data stays in the database and comes back with the n
 Ask digitalMood for the re-issued licence **before** upgrading, and paste it right after.
 :::
 
+### Upgrading to 2.39.0 {#upgrading-to-2-39-0}
+
+::: warning Replace a licence in the earlier format before upgrading
+mooDesk 2.39.0 accepts only licences in the current licence format, which states the agent
+capacity. After the upgrade, *License status* reports a licence issued in the earlier format
+as *This licence was issued for an earlier licence format and is not accepted by this version
+of mooDesk. Ask digitalMood for a replacement licence — running as Starter*, and the site runs
+as **Starter** until a replacement licence is pasted under *Licence key*. Nothing is lost in
+the meantime, and every existing agent is kept. Ask digitalMood for a replacement licence that
+states the number of agents you need.
+:::
+
+Which path applies depends on the version you are upgrading from:
+
+- **From 2.38.1:** paste the replacement licence **before** upgrading. 2.38.1 accepts it and
+  keeps its own agent limits until the upgrade. In the meantime, the *License status* page of
+  2.38.1 may show the agent count as "License claim ignored". That is expected, and it is
+  2.38.1 behaviour only: 2.39.0 does not show that note. The capacity on the new licence
+  applies once the upgrade is done.
+- **From a version earlier than 2.38.1:** contact digitalMood for guidance before proceeding.
+- **A site running as Starter without a licence** needs no action.
+
+**Check your agent count against the capacity of your licence.** Before upgrading, compare the
+number of active agents with the capacity of the licence you will use (see
+[Configuration → Agents](./configuration#agents)). A site with more agents than its licence
+allows, for example an Enterprise site with more than 50 agents and a 50-agent licence, keeps
+every agent after the upgrade, shows *Agent limit exceeded*, and cannot add new agents. Ask for
+a licence with the capacity you need, ideally before upgrading.
+
 ### After the upgrade
 
 1. **Plugins overview** shows the new version and *Up to date*.
 2. **mooDesk → System health** reads *Everything is working*. An upgrade that left something
    broken shows up here first.
-3. **mooDesk → License**: your edition is still the one you expect. If it shows
-   `untrusted_key`, paste the licence re-issued for 2.37.0 (see the warning above). Other
-   licences keep working across upgrades.
+3. **mooDesk → License**: your edition is still the one you expect, and the *Agents* row shows
+   the capacity on your licence. If it shows `untrusted_key`, paste the licence re-issued for
+   2.37.0 (see the warning above). If it says the licence was issued for an earlier licence
+   format, paste the replacement licence (see [Upgrading to 2.39.0](#upgrading-to-2-39-0)).
+   Other licences keep working across upgrades.
 4. **Scheduled tasks**: any task added by the new version is listed and enabled.
 5. If you use **email ingestion**:
    - A site that upgrades to a version with reply authentication starts on *Prefer token*
