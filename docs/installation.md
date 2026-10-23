@@ -272,17 +272,37 @@ a licence with the capacity you need, ideally before upgrading.
 
 ## Network and privacy
 
-**Outbound connections.** On its own, mooDesk makes one kind of outbound request: once a day,
+**Outbound connections.** On its own, mooDesk makes one kind of outbound request: once a day
+(03:30 site time unless an administrator changes the schedule of the task),
 `refresh_revocation_list` downloads the signed licence revocation list from the URL set in
 the plugin's *License* settings (by default
-`https://licenses.moodesk.io/crl/v2/revocations.json` since 2.37.0, and its `.sig`
-companion). The request is a plain
-download of a public file; it carries no site URL, no licence, no user data. If the host is
-unreachable the last valid list is kept, and a list that is not signed by a key this version
-trusts is rejected. Upgrading to 2.37.0 moves a site still on the previous default URL to the
-new one, and discards the list it held. You can switch the check off with the
-*Check for revoked licences* setting, and you will need to allow outbound HTTPS to that host if your
+`https://licenses.moodesk.io/crl/v2/revocations.json` since 2.37.0) and its `.sig`
+companion: two HTTPS GET requests, with the server certificate checked.
+
+The list lets digitalMood withdraw a licence key without a plugin release. mooDesk checks
+the list's signature against a public key embedded in the plugin and denies any licence the
+list names. If the host is unreachable the last valid list is kept, and a list that is not
+signed by a key this version trusts is rejected. Upgrading to 2.37.0 moves a site still on the
+previous default URL to the new one, and discards the list it held.
+
+What the download carries, in mooDesk 2.39.0:
+
+- It does **not** send your licence key, user records or ticket content. It is a plain GET of
+  a public file, with no query parameters, and every site downloads the same file.
+- Like any HTTP request, it exposes your server's public IP address (or that of the outbound
+  proxy Moodle is set to use) to the host that serves the list.
+- Its `User-Agent` header is Moodle's default, `MoodleBot/<Moodle major version> (+<site URL>)`,
+  so the host also receives your site's URL (`$CFG->wwwroot`) and Moodle's major version.
+
+You can switch the check off with the *Check for revoked licences* setting; a list already
+stored keeps being honoured. You will need to allow outbound HTTPS to that host if your
 server is behind an egress firewall.
+
+**No online licence check.** Downloading the revocation list is not a licence verification:
+the request carries no licence key, and the key is verified on your server against the public
+key embedded in the plugin. mooDesk 2.39.0 does not verify licences online. The plugin contains
+a client for a future verification service (`/api/v1/verify`), but in 2.39.0 it is switched off
+in the code: no setting turns it on and it makes no request.
 
 No other data leaves the site unless an administrator configures an outbound **webhook**
 (Enterprise) or an **IMAP mailbox** (Pro), and those talk only to the endpoints the
