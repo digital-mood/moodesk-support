@@ -539,7 +539,8 @@ middleware touches it.
 ## Other connections
 
 - **Licence revocation list** — the one outbound request mooDesk makes on its own, once a
-  day; what it fetches and how to allow it through an egress firewall is under
+  day; what it fetches, what the request exposes and how to allow it through an egress
+  firewall is under
   [Installation → Network and privacy](./installation#network-and-privacy).
 - **REST API** <Badge type="warning" text="Enterprise" /> — token-authenticated endpoints for
   tickets, knowledge base articles and webhooks. See [API](./api).
