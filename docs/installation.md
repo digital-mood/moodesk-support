@@ -32,7 +32,7 @@ Composer step and nothing to install on the server.
 ## Getting the package
 
 mooDesk is distributed as a single ZIP named `local_moodesk-<version>.zip` — for example
-`local_moodesk-2.39.0.zip`. The same package runs as Starter, Pro or Enterprise depending on
+`local_moodesk-2.39.1.zip`. The same package runs as Starter, Pro or Enterprise depending on
 the licence you activate afterwards.
 
 <!-- TODO: add official mooDesk download URL when available -->
@@ -85,7 +85,7 @@ Running the install once:
 ## Verifying the installation
 
 1. **Site administration → Plugins → Plugins overview**, section *Local plugins*: **mooDesk**
-   is listed with its version (for this release, `2.39.0`) and the status *Up to date*.
+   is listed with its version (for this release, `2.39.1`) and the status *Up to date*.
 2. **Site administration → Plugins → Local plugins** now contains a **mooDesk** settings page
    plus entries for *License status* and *Departments* (more appear as you gain the
    corresponding capabilities).
@@ -285,14 +285,17 @@ list names. If the host is unreachable the last valid list is kept, and a list t
 signed by a key this version trusts is rejected. Upgrading to 2.37.0 moves a site still on the
 previous default URL to the new one, and discards the list it held.
 
-What the download carries, in mooDesk 2.39.0:
+What the download carries:
 
 - It does **not** send your licence key, user records or ticket content. It is a plain GET of
   a public file, with no query parameters, and every site downloads the same file.
 - Like any HTTP request, it exposes your server's public IP address (or that of the outbound
-  proxy Moodle is set to use) to the host that serves the list.
-- Its `User-Agent` header is Moodle's default, `MoodleBot/<Moodle major version> (+<site URL>)`,
-  so the host also receives your site's URL (`$CFG->wwwroot`) and Moodle's major version.
+  proxy Moodle is set to use) to the host that serves the list. This is true in every version.
+- **mooDesk 2.39.1 and later:** its `User-Agent` header is the fixed `moodesk-crl/2`, the same
+  on every site. It does not include your site's URL.
+- **mooDesk 2.39.0 and earlier:** its `User-Agent` header is Moodle's default,
+  `MoodleBot/<Moodle major version> (+<site URL>)`, so the host also receives your site's URL
+  (`$CFG->wwwroot`) and Moodle's major version. Upgrading to 2.39.1 stops this.
 
 You can switch the check off with the *Check for revoked licences* setting; a list already
 stored keeps being honoured. You will need to allow outbound HTTPS to that host if your
@@ -300,8 +303,8 @@ server is behind an egress firewall.
 
 **No online licence check.** Downloading the revocation list is not a licence verification:
 the request carries no licence key, and the key is verified on your server against the public
-key embedded in the plugin. mooDesk 2.39.0 does not verify licences online. The plugin contains
-a client for a future verification service (`/api/v1/verify`), but in 2.39.0 it is switched off
+key embedded in the plugin. mooDesk 2.39.1 does not verify licences online. The plugin contains
+a client for a future verification service (`/api/v1/verify`), but in 2.39.1 it is switched off
 in the code: no setting turns it on and it makes no request.
 
 No other data leaves the site unless an administrator configures an outbound **webhook**

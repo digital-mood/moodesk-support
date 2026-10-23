@@ -101,8 +101,9 @@ everything back as it was.
 The key itself is verified on your server against a public key embedded in the plugin; no
 call is made to validate it. What does go out is one download a day of the signed **licence
 revocation list**, a public file. That request sends no licence key, user records or ticket
-content, but like any HTTP request it exposes your server's IP address, and Moodle's default
-User-Agent carries your site URL. It can be switched off — [Installation → Network and privacy](./installation#network-and-privacy).
+content. Like any HTTP request it exposes your server's IP address. Up to and including 2.39.0
+it also sends your site URL, inside Moodle's default User-Agent; from 2.39.1 it sends the fixed
+User-Agent `moodesk-crl/2`, without the site URL. It can be switched off — [Installation → Network and privacy](./installation#network-and-privacy).
 
 ## Agents and permissions
 
@@ -271,8 +272,9 @@ cloud component and nothing is synchronised elsewhere.
 Three things, each disclosed and each under your control:
 
 - the daily download of the **licence revocation list**, a public file. The request sends no
-  licence key, user records or ticket content; it exposes your server's IP address and,
-  through Moodle's default User-Agent, your site URL (can be switched off);
+  licence key, user records or ticket content; it exposes your server's IP address and, up to
+  and including 2.39.0, your site URL through Moodle's default User-Agent (2.39.1 and later
+  send a fixed User-Agent without it; the download can be switched off);
 - **webhook deliveries** (Enterprise), which carry ticket data to the URLs an administrator
   entered;
 - the **IMAP connection** to the mailbox an administrator configured (Pro), where mooDesk reads
