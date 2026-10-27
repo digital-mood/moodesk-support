@@ -17,6 +17,22 @@ The public changelog starts at **2.34.0**. Earlier releases are not listed here.
 
 <!-- Add new releases directly below this line, newest first, with the same headings. -->
 
+## 2.39.1 — 2026-10-24
+
+### Fixed
+
+- **The daily licence revocation list download no longer sends your site URL.** Up to 2.39.0
+  the download used Moodle's default User-Agent, `MoodleBot/<Moodle version> (+<site URL>)`, so
+  the licence server could see which site made the request. From 2.39.1 it sends the fixed
+  User-Agent `moodesk-crl/2`, the same on every site. The download still does not send your
+  licence key, user records or ticket content. Like any request over the internet, it lets the
+  licence server see the IP address it comes from: your server's, or that of the proxy Moodle
+  uses. How often the list is downloaded, how it is verified and what happens when it cannot be
+  downloaded are unchanged. Nothing to do on your side.
+- **The *Check for revoked licences* setting describes the download accurately.** Its
+  description said the download sends no site or personal data. It now says what the download
+  does not send and that your server's IP address is visible to the licence server.
+
 ## 2.39.0 — 2026-10-20
 
 ::: warning Before you upgrade
