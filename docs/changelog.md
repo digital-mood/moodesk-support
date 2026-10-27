@@ -17,7 +17,7 @@ The public changelog starts at **2.34.0**. Earlier releases are not listed here.
 
 <!-- Add new releases directly below this line, newest first, with the same headings. -->
 
-## 2.39.1 — RELEASE-DATE-PLACEHOLDER
+## 2.39.1 — 2026-10-24
 
 ### Fixed
 
