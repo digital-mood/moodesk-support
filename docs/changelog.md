@@ -28,8 +28,7 @@ The public changelog starts at **2.34.0**. Earlier releases are not listed here.
   licence key, user records or ticket content. Like any request over the internet, it lets the
   licence server see the IP address it comes from: your server's, or that of the proxy Moodle
   uses. How often the list is downloaded, how it is verified and what happens when it cannot be
-  downloaded are unchanged. Nothing to do on your side. See
-  [Installation → Network and privacy](./installation#network-and-privacy).
+  downloaded are unchanged. Nothing to do on your side.
 - **The *Check for revoked licences* setting describes the download accurately.** Its
   description said the download sends no site or personal data. It now says what the download
   does not send and that your server's IP address is visible to the licence server.
