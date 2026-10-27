@@ -49,7 +49,7 @@ the edition from its own `tier`. What each edition includes is the table in
 [Features → Editions at a glance](./features#editions-at-a-glance).
 
 **How do I get a licence?**
-Contact digitalMood for licensing information. A key is issued for one site URL and pasted
+Contact [support@moodesk.io](mailto:support@moodesk.io) for licensing information. A key is issued for one site URL and pasted
 into **Site administration → Plugins → Local plugins → mooDesk → Licence key**; saving it
 revalidates immediately — [Configuration → License](./configuration#license).
 
@@ -63,13 +63,13 @@ meantime, nothing is lost and every agent is kept.
 **After upgrading to 2.39.0 the site runs as Starter.**
 2.39.0 accepts only licences in the current format, which states the agent capacity. A licence
 issued in the earlier format shows *This licence was issued for an earlier licence format and
-is not accepted by this version of mooDesk*. Ask digitalMood for a replacement licence and paste
+is not accepted by this version of mooDesk*. Contact [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence and paste
 it under *Licence key*. Nothing is deleted and every agent is kept in the meantime —
 [Installation → Upgrading](./installation#upgrading).
 
 **After upgrading to 2.37.0 the site runs as Starter.**
 2.37.0 replaced the licence signing key, so a licence issued before it shows *untrusted_key*.
-Ask digitalMood for a re-issued licence and paste it under *Licence key*. Nothing is deleted
+Contact [support@moodesk.io](mailto:support@moodesk.io) for a re-issued licence and paste it under *Licence key*. Nothing is deleted
 in the meantime — [Installation → Upgrading](./installation#upgrading).
 
 **Can I use my production licence on a staging copy?**
@@ -79,7 +79,7 @@ copy runs as Starter. A staging site needs its own key.
 **How many agents can I have?**
 As many as the capacity on your licence. Starter, without a licence, allows **2**. Pro allows
 the capacity on its licence: **10, 15, 20 or 25**. Enterprise allows **50 to 1000**, in steps
-of 25. Every edition has a fixed capacity; for more than 1000 agents, contact digitalMood. An *active
+of 25. Every edition has a fixed capacity; for more than 1000 agents, contact [support@moodesk.io](mailto:support@moodesk.io). An *active
 agent* is a user who holds `local/moodesk:agent` and is neither suspended nor deleted. *Add
 agent* stops at the capacity and names the way out for your plan; agents given the role through
 Moodle's own role screens are counted but not blocked —
@@ -308,7 +308,8 @@ issue. Issues are public: never include licence keys, tokens, passwords, email a
 real user data, and sanitise logs before attaching them.
 
 **Is there commercial support?**
-Contact digitalMood for licensing and support information.
+Contact [support@moodesk.io](mailto:support@moodesk.io) for licensing and account questions. Bug reports, feature
+requests and documentation issues go through [Support](./support).
 
 ---
 

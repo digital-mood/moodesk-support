@@ -82,7 +82,7 @@ A licence issued in the earlier licence format is not accepted by 2.39.0. Read t
 ::: warning Replace a licence in the earlier format before upgrading
 After the upgrade, *License status* reports a licence issued in the earlier format as not
 accepted by this version of mooDesk, and the site runs as Starter until a replacement licence is
-pasted. Nothing is lost in the meantime, and every existing agent is kept. Ask digitalMood for a
+pasted. Nothing is lost in the meantime, and every existing agent is kept. Ask [support@moodesk.io](mailto:support@moodesk.io) for a
 replacement licence that states the number of agents you need.
 
 On 2.38.1 you can paste the replacement **before** upgrading: 2.38.1 accepts it and keeps its own
@@ -90,7 +90,7 @@ agent limits until the upgrade, and the *License status* page of 2.38.1 may show
 as "License claim ignored", which is expected. That note belongs to 2.38.1 only. The new capacity
 applies once the upgrade is done.
 
-For upgrades from versions earlier than 2.38.1, contact digitalMood for guidance before proceeding.
+For upgrades from versions earlier than 2.38.1, contact [support@moodesk.io](mailto:support@moodesk.io) for guidance before proceeding.
 
 A site running as Starter without a licence needs no action.
 :::
@@ -220,7 +220,7 @@ before upgrading a site that runs Pro or Enterprise.
 
 ::: warning Licences signed with the retired key must be replaced before upgrading
 After the upgrade, a licence signed with the retired key shows **`untrusted_key`** on
-*License status*, and a site whose edition depends on it runs as Starter. Ask digitalMood for
+*License status*, and a site whose edition depends on it runs as Starter. Ask [support@moodesk.io](mailto:support@moodesk.io) for
 a re-issued licence before upgrading, and paste it once the upgrade is done. A site running as
 Starter without a licence needs no action.
 :::

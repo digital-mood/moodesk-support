@@ -187,10 +187,10 @@ Before upgrading:
 - Read the [changelog](./changelog) for every version between yours and the new one. It
   names every change in behaviour and any step you need to take.
 - **Upgrading to 2.39.0 or later on Pro or Enterprise:** your licence must be in the current
-  licence format. Get a replacement licence from digitalMood first, and compare your active
+  licence format. Get a replacement licence from [support@moodesk.io](mailto:support@moodesk.io) first, and compare your active
   agents with its capacity (see [Upgrading to 2.39.0](#upgrading-to-2-39-0)).
 - **Upgrading to 2.37.0 or later from an earlier version on Pro or Enterprise:** get a
-  re-issued licence from digitalMood first (see below).
+  re-issued licence from [support@moodesk.io](mailto:support@moodesk.io) first (see below).
 - Take a backup of the Moodle database as you would for any plugin upgrade.
 
 What to know about the upgrade itself:
@@ -210,7 +210,7 @@ mooDesk 2.37.0 trusts only a new licence signing key. A licence issued before 2.
 with the previous key, so after the upgrade *mooDesk → License* shows **`untrusted_key`** and
 the site runs as **Starter** until a re-issued licence is pasted under *Licence key*. Nothing is
 deleted: Pro and Enterprise data stays in the database and comes back with the new licence.
-Ask digitalMood for the re-issued licence **before** upgrading, and paste it right after.
+Ask [support@moodesk.io](mailto:support@moodesk.io) for the re-issued licence **before** upgrading, and paste it right after.
 :::
 
 ### Upgrading to 2.39.0 {#upgrading-to-2-39-0}
@@ -221,7 +221,7 @@ capacity. After the upgrade, *License status* reports a licence issued in the ea
 as *This licence was issued for an earlier licence format and is not accepted by this version
 of mooDesk. Ask digitalMood for a replacement licence — running as Starter*, and the site runs
 as **Starter** until a replacement licence is pasted under *Licence key*. Nothing is lost in
-the meantime, and every existing agent is kept. Ask digitalMood for a replacement licence that
+the meantime, and every existing agent is kept. Ask [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence that
 states the number of agents you need.
 :::
 
@@ -232,7 +232,7 @@ Which path applies depends on the version you are upgrading from:
   2.38.1 may show the agent count as "License claim ignored". That is expected, and it is
   2.38.1 behaviour only: 2.39.0 does not show that note. The capacity on the new licence
   applies once the upgrade is done.
-- **From a version earlier than 2.38.1:** contact digitalMood for guidance before proceeding.
+- **From a version earlier than 2.38.1:** contact [support@moodesk.io](mailto:support@moodesk.io) for guidance before proceeding.
 - **A site running as Starter without a licence** needs no action.
 
 **Check your agent count against the capacity of your licence.** Before upgrading, compare the
