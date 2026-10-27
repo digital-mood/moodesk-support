@@ -66,12 +66,12 @@ data stays in the database, and a valid key brings everything back. The page nam
 | `missing` | No key saved |
 | `malformed` | The text is not a licence key mooDesk can read |
 | `forged` | The key's signature does not verify against the signing key it names |
-| `untrusted_key` | The key is signed with a key this version of mooDesk does not trust. Licences issued before 2.37.0 show this after upgrading, because 2.37.0 replaced the signing key. Ask digitalMood for a re-issued licence and paste it under *Licence key* |
+| `untrusted_key` | The key is signed with a key this version of mooDesk does not trust. Licences issued before 2.37.0 show this after upgrading, because 2.37.0 replaced the signing key. Contact [support@moodesk.io](mailto:support@moodesk.io) for a re-issued licence and paste it under *Licence key* |
 | `expired` | The key is past its expiry date |
 | `revoked` | The key is on the revocation list |
 | `site_mismatch` | The key was issued for another site URL — a staging copy of production is the usual case |
-| *Issued for an earlier licence format* | The key was issued in the licence format used before 2.39.0, which this version does not accept. The page reads: *This licence was issued for an earlier licence format and is not accepted by this version of mooDesk. Ask digitalMood for a replacement licence — running as Starter*. Ask digitalMood for a replacement licence and paste it under *Licence key* |
-| *No valid agent capacity* | The key does not state an agent capacity its plan allows. The page reads: *This licence does not state a valid agent capacity for its plan. Ask digitalMood for a replacement licence — running as Starter*. Ask digitalMood for a replacement licence |
+| *Issued for an earlier licence format* | The key was issued in the licence format used before 2.39.0, which this version does not accept. The page reads: *This licence was issued for an earlier licence format and is not accepted by this version of mooDesk. Ask digitalMood for a replacement licence — running as Starter*. Contact [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence and paste it under *Licence key* |
+| *No valid agent capacity* | The key does not state an agent capacity its plan allows. The page reads: *This licence does not state a valid agent capacity for its plan. Ask digitalMood for a replacement licence — running as Starter*. Contact [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence |
 | `nopubkey` | mooDesk cannot read its own verification key: a broken install, reinstall the package |
 
 ### General
@@ -307,7 +307,7 @@ The agent capacity comes from the licence, and every edition has one:
 | Pro | The capacity on the licence: 10, 15, 20 or 25 (10 included, plus blocks of 5) |
 | Enterprise | The capacity on the licence: 50 to 1000, in steps of 25 (50 included, plus blocks of 25) |
 
-For more than 1000 agents, contact digitalMood.
+For more than 1000 agents, contact [support@moodesk.io](mailto:support@moodesk.io).
 
 The License and System Health pages show the active agents against the capacity and how the
 capacity is made up, for example `12 / 15 agents (10 included + 1 block)`, or `1 / 2 agents`

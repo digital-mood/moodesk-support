@@ -51,7 +51,7 @@ of active agents comes from the licence:
 | Pro | as on the licence: 10, 15, 20 or 25 |
 | Enterprise | as on the licence: 50 to 1000, in steps of 25 |
 
-Every edition has a fixed capacity; for more than 1000 agents, contact digitalMood. See
+Every edition has a fixed capacity; for more than 1000 agents, contact [support@moodesk.io](mailto:support@moodesk.io). See
 [Configuration → Agents](./configuration#agents).
 
 See [Features](./features) for what each edition includes.
@@ -129,7 +129,7 @@ If the key is malformed, expired, revoked, signed for another site, signed with 
 version no longer trusts (any licence issued before 2.37.0 shows `untrusted_key`), issued in an
 earlier licence format, or does not state a valid agent
 capacity for its plan, the License page says which. The site keeps running as Starter and
-nothing is lost — contact digitalMood for a replacement licence. See
+nothing is lost — contact [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence. See
 [Configuration → License](./configuration#license).
 
 ::: tip You have

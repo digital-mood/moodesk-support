@@ -31,4 +31,5 @@ The site is built with [VitePress](https://vitepress.dev) and deployed to GitHub
 ## Reporting sensitive issues
 
 Issues are public. Never post credentials, personal data or production dumps. If a report
-involves a security vulnerability, do not open a public issue; contact digitalMood directly.
+involves a security vulnerability, do not open a public issue; write to
+[support@moodesk.io](mailto:support@moodesk.io) instead, as described in [SECURITY.md](SECURITY.md).
