@@ -115,6 +115,8 @@ A site that stays on Starter upgrades `local_moodesk` and needs nothing else.
 
 ## 2.39.0 — 2026-10-20
 
+*Agent capacities changed to fixed tiers in 3.0.0.*
+
 ::: warning Before you upgrade
 A licence issued in the earlier licence format is not accepted by 2.39.0. Read the
 [upgrade notes](#upgrade-notes-2-39-0) and
