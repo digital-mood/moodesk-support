@@ -11,6 +11,12 @@ Pro and Enterprise now live in a separate add-on, `local_moodeskpro`, which need
 is listed in the [3.0.0 changelog](./changelog#upgrade-notes-3-0-0), and new installations are
 covered by [Installation](./installation).
 
+::: info Upgrading to 3.0.1
+The same path applies when you upgrade from 2.x straight to 3.0.1. Keep both plugins on the
+same version: `local_moodeskpro` 3.0.1 needs `local_moodesk` 3.0.1. 3.0.1 also changes how
+replies to notifications are threaded; see the [3.0.1 changelog](./changelog#upgrade-notes-3-0-1).
+:::
+
 ::: warning Nothing moves to the add-on on its own
 Tickets, replies, departments, categories and the knowledge base stay where they are. What
 belonged to the paid features is **not** migrated: on the add-on they start empty and you set
@@ -22,7 +28,7 @@ Moodle database before upgrading.
 
 | Your site today | What to do |
 |---|---|
-| **Starter**, no licence | Upgrade `local_moodesk` to 3.0.0. Nothing else is needed. |
+| **Starter**, no licence | Upgrade `local_moodesk` to 3.0.0 or later. Nothing else is needed. |
 | **Pro or Enterprise** | Upgrade `local_moodesk`, install `local_moodeskpro`, enter the licence key again in the add-on, then set up again what you use. Follow the [steps](#steps-for-pro-and-enterprise). Until the add-on has a valid key, the site runs as Starter. |
 | **Any edition, using the REST API** | Also issue new tokens and change your calls: [REST API](#rest-api). |
 
@@ -62,10 +68,10 @@ Without the add-on, a merged ticket is shown as an ordinary closed ticket.
 
 ## Steps for Pro and Enterprise
 
-1. **Upgrade `local_moodesk`** to 3.0.0 through **Site administration → Plugins → Install
+1. **Upgrade `local_moodesk`** to 3.0.0 or later through **Site administration → Plugins → Install
    plugins**, or by replacing `local/moodesk/` and opening **Site administration →
    Notifications**. The site now runs as Starter.
-2. **Install `local_moodeskpro`** 3.0.0 the same way (filesystem: `local/moodeskpro/`). See
+2. **Install `local_moodeskpro`** at the same version the same way (filesystem: `local/moodeskpro/`). See
    [Installation](./installation#installing).
 3. **Enter the licence key again** under **Site administration → Plugins → Local plugins →
    mooDesk Pro → License → Licence key**, and save. Open **mooDesk → License**
@@ -135,11 +141,14 @@ secret of the new subscription. See [Integrations](./integrations#webhooks).
   token*, so that the upgrade refuses nothing. Choose *Require token* again once you have
   checked your replies. A fresh install starts on *Require token*. See
   [Integrations](./integrations).
-- **Replies to notifications sent before 3.0.0.** The add-on signs reply addresses with a new
-  key, so the token in an older reply address is not recognised. Under *Prefer token* such a
-  reply comes in as a reply without a token: it joins its ticket only if it quotes an email
-  mooDesk already stored, such as an earlier reply by email in the same thread; otherwise it
-  becomes a new ticket. Under *Require token* it is refused.
+- **Replies to notifications sent before 3.0.1.** The add-on signs reply addresses with a new
+  key, so the token in a reply address sent by 2.x is not recognised, and such a reply comes in
+  as a reply without a token. From 3.0.1, under *Prefer token*, a reply without a token joins
+  its ticket by the notification's identifier only when it answers a notification sent by 3.0.1
+  or later. A reply to an earlier notification, including those sent by 2.x, joins its ticket
+  only if it quotes an email mooDesk already stored, such as an earlier reply by email in the
+  same thread; otherwise it becomes a new ticket. Under *Require token*, every reply without a
+  token is refused.
 
 ### Satisfaction surveys (CSAT)
 
@@ -164,7 +173,7 @@ delete them, with explicit confirmation. Do not delete them by hand.
 ## After the upgrade
 
 1. **Plugins overview** shows **mooDesk** and, on Pro and Enterprise, **mooDesk Pro**, both at
-   `3.0.0` and *Up to date*.
+   the same version (`3.0.0` or later) and *Up to date*.
 2. **mooDesk → System health** reads *Everything is working*. An upgrade that left something
    broken shows up here first.
 3. **mooDesk → License** (Pro and Enterprise) shows your edition and the *Agents* row with your
@@ -177,4 +186,4 @@ delete them, with explicit confirmation. Do not delete them by hand.
 
 ---
 
-*Verified against mooDesk 3.0.0.*
+*Verified against mooDesk 3.0.1.*

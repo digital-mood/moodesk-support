@@ -137,12 +137,19 @@ For every message the poll reads, in this order:
    in the recipients, so a reply to all keeps its ticket.
 8. **Threading.** A valid token names the ticket. Without one, every Message-ID in
    `In-Reply-To` and `References` is matched against the Message-IDs of mail mooDesk has **received** for a ticket (kept for
-   the *Ticket correspondence retention* period). mooDesk does not record the Message-ID of
-   the notifications it sends, so a reply to a notification threads reliably only through
-   the token. A match becomes a **public reply** from the sender. A reply to a **closed**
+   the *Ticket correspondence retention* period) and, from 3.0.1, against the identifier
+   mooDesk gives each notification it sends, which is signed and checked like a token, with
+   nothing stored. Such a reply is still accepted as a reply without a token, by its sender.
+   If the site's outgoing mail server replaces that identifier (Exchange Online and Microsoft
+   365 do, and some relays and gateways too), a reply to a notification threads reliably
+   only through the token. A match becomes a **public reply** from the sender. A reply to a **closed**
    ticket opens a **new ticket** instead. A reply to a ticket that was **merged** into another
    is refused, and the sender is told which ticket to write to.
-9. **Duplicates.** The same sender and subject inside the *Deduplication window* is dropped.
+9. **Duplicates.** A message that did not thread and is a second copy of an email that opened
+   a ticket (same sender, subject and body) inside the *Deduplication window* is skipped. That
+   ticket gets an internal note with the sender, subject and time, and *System Health* counts
+   the skipped copies of the last 30 days under *Duplicate emails*. Replies are never skipped
+   this way.
 10. **New ticket.** The sender becomes the requester, the subject the subject and the text
     body the message. Attachments go on the opening message, the source is *Email*, and the
     configured department and category apply. All of this happens after the sender-authenticity
@@ -199,7 +206,7 @@ short. Refusals also appear as operator alerts, and failures as incidents on
 | `reply_added` | A public reply was added to an existing ticket |
 | `probe_confirmed` | The reply-address check came back. It was consumed and nothing was created |
 | `autoreply_skipped` | An automatic reply, dropped |
-| `duplicate_skipped` | Inside the deduplication window, dropped |
+| `duplicate_skipped` | A second copy of an email that opened a ticket, inside the deduplication window. Noted on that ticket and counted on *System Health* |
 | `already_processed` | Its Message-ID is already on record (an earlier run, or the re-scan) |
 | `rescan_skipped_no_message_id` | Re-scan only: already in the folder and has no Message-ID, so it was left alone |
 | `unknown_sender_rejected` | The sender is not an active Moodle user. Operators alerted |
@@ -324,12 +331,14 @@ When the token is valid but the `From:` belongs to a different user, the reply i
 (no tokens are checked — transition only), *Prefer token* (replies with and without a token
 are accepted; each kind is counted so you can see what would break), and *Require token* (a
 reply without a valid token is refused). A reply without a token can only be threaded through
-`References` to mail the requester sent earlier — in practice, most replies to a notification
-reach their ticket because of the token, whichever mode is on. A fresh install starts on
+`References`: to mail the requester sent earlier, or, from 3.0.1, to a notification sent by
+3.0.1 or later whose identifier the outgoing mail server kept — in practice, most replies to a
+notification reach their ticket because of the token, whichever mode is on. A fresh install starts on
 *Require token*; a site upgraded from 2.x lands on *Prefer token* when the add-on is installed.
 The add-on signs reply addresses with a new key, so the token in a notification sent before
 3.0.0 is not recognised: under *Prefer token* the reply is read as one without a token (and
-threads only through `References`, as above); under *Require token* it is refused.
+threads only through `References` to mail mooDesk stored, since notifications sent before
+3.0.1 carry no identifier it recognises); under *Require token* it is refused.
 
 *Require token* is only safe once a tokenised address is known to reach the mailbox. That is
 what the **round-trip check** on the settings page establishes:
