@@ -10,7 +10,8 @@ line starting with `[Security]`.
 
 ## What to include
 
-- The mooDesk version (*Site administration → Plugins → Plugins overview*, `local_moodesk`)
+- The mooDesk version (*Site administration → Plugins → Plugins overview*, `local_moodesk`, and
+  `local_moodeskpro` if it is installed)
 - The Moodle version
 - Steps to reproduce the issue
 - The impact: what an attacker could do, and which roles or permissions are needed
