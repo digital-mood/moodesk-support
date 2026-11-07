@@ -16,22 +16,27 @@ decide what is on the screen.
 
 ## Editions at a glance
 
-Three editions, cumulative — each one includes everything below it. The edition is set by
-the licence key ([Configuration → License](./configuration#license)); with no key a site runs
-as **Starter**. Screens that belong to a higher edition stay visible and show an upgrade
-notice instead of their content. The agent capacity is written in the licence, and every
-edition has one ([Configuration → Agents](./configuration#agents)).
+Three editions, cumulative — each one includes everything below it — in two plugins.
+`local_moodesk` alone is **Starter**. **Pro** and **Enterprise** are the add-on
+`local_moodeskpro`, installed on top of `local_moodesk`; its licence key decides which of the two
+the site runs ([Configuration → License](./configuration#license)), and with no valid key the
+site runs as Starter. Without the add-on, the Pro and Enterprise screens do not exist. With the
+add-on, a screen your licence does not include reads *Not included in this site's licence*.
+The agent capacity is written in the licence, in fixed tiers, and every edition has one
+([Configuration → Agents](./configuration#agents)).
 
 | | Starter | <Badge type="tip" text="Pro" /> | <Badge type="warning" text="Enterprise" /> |
 |---|:---:|:---:|:---:|
-| Agent capacity | 2 | 10 to 25, as on the licence | 50 to 1000, as on the licence |
+| Plugins | `local_moodesk` | + `local_moodeskpro` | + `local_moodeskpro` |
+| Agent capacity | 2 | 10, 15, 20 or 25, as on the licence | 50, 75 or 100, as on the licence; more on request |
 | Tickets, queue, saved views, bulk actions | ✓ | ✓ | ✓ |
 | Categories, departments | ✓ | ✓ | ✓ |
 | SLA targets and indicators | ✓ | ✓ | ✓ |
 | Notifications | ✓ | ✓ | ✓ |
 | Dashboard | ✓ | ✓ + analytics | ✓ + analytics |
 | Knowledge base: articles, search, suggested articles | ✓ | ✓ | ✓ |
-| System Health, License page | ✓ | ✓ | ✓ |
+| System Health | ✓ | ✓ | ✓ |
+| License page, expiry reminders | — | ✓ | ✓ |
 | Privacy export and erasure | ✓ | ✓ | ✓ |
 | Teams | — | ✓ | ✓ |
 | Custom fields | — | ✓ | ✓ |
@@ -140,7 +145,7 @@ article link** into the reply.
 | Create article <Badge type="tip" text="Pro" /> | Start a knowledge base draft pre-filled from this ticket |
 
 **Audit trail.** Every change — creation, status, priority, assignment, category,
-department, team, replies, merges — is recorded with who did it and when. In 2.39.0 the
+department, team, replies, merges — is recorded with who did it and when. In 3.0.0 the
 trail is kept and exported with the user's data, but it is **not shown on the ticket page**.
 
 ### Ticket lifecycle
@@ -186,14 +191,15 @@ the draft still has to be published by someone with the publishing capability �
 Two tickets about the same thing become one. From the duplicate's sidebar, *Merge* opens the
 merge page: type in *Target* to search for the ticket to keep, then review the **preview** —
 what will be linked, and any conflict such as different requesters, different SLA states or
-different custom field values — and confirm. (In 2.38.1, searching in *Target*
-showed no results; 2.39.0 fixes it.)
+different custom field values — and confirm. The merge page is
+`/local/moodeskpro/merge.php`.
 
 - Nothing is copied: the duplicate's replies, notes and attachments stay where they are and
   are **read through the link** on the target, labelled *From ticket #N*. The duplicate is
   closed.
 - A merged ticket is not "resolved": no CSAT survey is created for it and automation rules
-  skip it.
+  skip it. On a site without the add-on, a merged ticket is shown as an ordinary closed
+  ticket.
 - On the duplicate, the properties (status, priority, category, department, team, assignee)
   and the custom fields are shown as read-only values. They cannot be changed while the merge
   stands. The target keeps its menus.
@@ -204,7 +210,8 @@ showed no results; 2.39.0 fixes it.)
   rule or webhook. Merging and undoing are two separate capabilities, so a role can be allowed
   to merge without being allowed to unmerge. Both default to Moodle's *Manager* archetype.
 - Which of the two tickets may be the duplicate is governed by the *Merge ordering* setting
-  ([Configuration → Automation](./configuration#automation)).
+  ([Configuration → Inbound sender authentication](./configuration#inbound-sender-authentication),
+  where the mooDesk Pro page lists it).
 
 ## For managers and administrators
 
@@ -225,11 +232,11 @@ average first response), the daily **trend**, tickets by **status**, by **priori
 
 <Badge type="tip" text="Pro" /> adds the analytics panels: the **SLA compliance** gauge with the
 site's target line, **agent workload**, **top categories**, and the **customer satisfaction**
-score when CSAT is on. Below Pro these panels say so instead of showing data.
+score when CSAT is on. Below Pro these panels are not shown.
 
 ### Reports <Badge type="tip" text="Pro" />
 
-*mooDesk → Reports* (`viewreports`) covers a date range — 30 days by default, 90 at most —
+*mooDesk → Reports* (`/local/moodeskpro/reports.php`, capability `local/moodeskpro:viewreports`) covers a date range — 30 days by default, 90 at most —
 in five sections: **Ticket volume**, **Resolution time**, **Agent workload**, **Department
 throughput** and **SLA compliance**. Each section exports to **CSV**, and the whole page has a
 **print** view. The compliance figure counts a resolved ticket as *within SLA* when it
@@ -293,9 +300,19 @@ thresholds and cooldown are under
 
 ### License
 
-*mooDesk → License* (site administrators) shows the key's verdict, the effective edition, the
-expiry and the agent count against the limit. What each verdict means is in
-[Configuration → License](./configuration#license).
+With the add-on, *mooDesk → License* (`/local/moodeskpro/license.php`, site administrators)
+shows the key's verdict, the effective edition, the expiry and the agent count against the
+capacity. What each verdict means is in [Configuration → License](./configuration#license).
+
+- **Expiry reminders.** 30 and 7 days before the licence expires, site administrators get a
+  notification by email and popup, and the License page shows a banner during the last 30
+  days. After the expiry date the site runs as Starter; no data is deleted.
+- **Over capacity.** The add-on never refuses or blocks an agent. When a site has more active
+  agents than its licence covers, agents and administrators see a notice on every mooDesk page
+  until the count is back within the capacity. Requesters never see it
+  ([Configuration → Agents](./configuration#agents)).
+
+A Starter site without the add-on has no licence and no License page.
 
 ## Knowledge base
 
@@ -322,7 +339,8 @@ ticket ([For requesters](#for-requesters)).
 - **Analytics** — *mooDesk → Articles → Analytics*: views, helpful rate, searches with no
   results, and how often suggested articles were offered and opened, by language. Events are
   anonymous and expire after the retention windows in
-  [Configuration → General](./configuration#general).
+  [Configuration → CSAT](./configuration#customer-satisfaction-csat), where the mooDesk Pro
+  page lists them.
 - **Moodle global search** — published articles appear as results in the site's own search,
   audience-checked per hit.
 
@@ -335,8 +353,10 @@ this is what they are for.
 
 - **Email ingestion** <Badge type="tip" text="Pro" /> — a support mailbox becomes a channel: a
   new mail from a known Moodle user opens a ticket, a reply to a notification lands in the
-  right conversation, attachments come along. Mail from unknown senders is refused and the
-  operators are told. Setup, provider notes and the authentication rules are in
+  right conversation, attachments come along. An attachment dropped because attachments are
+  off, or over the size or per-message limit, is reported to agents in an internal note on
+  the ticket with its name and size; the requester does not see it and no file content is
+  kept. Mail from unknown senders is refused and the operators are told. Setup, provider notes and the authentication rules are in
   [Integrations](./integrations); the settings are under
   [Configuration → Email ingestion](./configuration#email-ingestion).
 - **Webhooks** <Badge type="warning" text="Enterprise" /> — mooDesk calls a URL of yours when a
@@ -360,13 +380,13 @@ mooDesk implements Moodle's privacy API, so a site's existing data-request workf
   readable as a support history — say so before a data subject asks.
 - **Retention** — refused mail, mail correspondence records, incidents, webhook logs and
   knowledge base analytics expire on their own schedules
-  ([Configuration → Operator alerts and retention](./configuration#operator-alerts-and-retention)).
+  ([Configuration → Settings reference](./configuration#settings-reference)).
   Tickets, replies and ratings are never purged automatically.
 
 What leaves the server, and what does not, is under
 [Installation → Network and privacy](./installation#network-and-privacy).
 
-## Not yet in 2.39.0
+## Not yet in 3.0.0
 
 One feature on this page exists but is incomplete in this release. It is detailed under
 [Configuration → Known limitations](./configuration#known-limitations):
@@ -375,4 +395,4 @@ One feature on this page exists but is incomplete in this release. It is detaile
 
 ---
 
-*Verified against mooDesk 2.39.0.*
+*Verified against mooDesk 3.0.0.*

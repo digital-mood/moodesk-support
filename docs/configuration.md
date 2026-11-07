@@ -1,21 +1,25 @@
 ---
 title: Configuration
-description: Recommended setup order, the full settings reference with real defaults, and how to configure roles, agents, categories, departments, teams, SLA targets and notifications.
+description: Recommended setup order, the full settings reference of mooDesk and mooDesk Pro with real defaults, and how to configure roles, agents, categories, departments, teams, SLA targets and notifications.
 ---
 
 # Configuration
 
-Everything mooDesk can be configured with, in two places:
+Everything mooDesk can be configured with, in three places:
 
-- **Plugin settings** — **Site administration → Plugins → Local plugins → mooDesk**. One page,
-  in sections; this is where defaults, thresholds, switches and credentials live.
+- **mooDesk settings** — **Site administration → Plugins → Local plugins → mooDesk**, from
+  `local_moodesk`: General, Notifications, Automation and SLA. Every edition has it.
+- **mooDesk Pro settings** — **Site administration → Plugins → Local plugins → mooDesk Pro**,
+  from the add-on `local_moodeskpro`: email ingestion, reply and sender authentication, licence,
+  CSAT, webhooks and API. It exists only when the add-on is installed.
 - **Operations** — the *Administration* group of mooDesk's own sidebar: categories,
-  departments, agents, teams, custom fields, automations, webhooks, API tokens. These are
-  records you create, not settings you toggle.
+  departments, agents, and with the add-on teams, custom fields, automations, webhooks and API
+  tokens. These are records you create, not settings you toggle.
 
-Sections that belong to a paid edition are shown on every edition; the code behind them does
-nothing until the feature is licensed. Where an edition matters it is marked
-<Badge type="tip" text="Pro" /> or <Badge type="warning" text="Enterprise" />.
+The sections of the mooDesk Pro page are shown whatever the licence (except *API access*, shown
+only on Enterprise); the code behind a section does nothing until your licence includes the
+feature. Where an edition matters it is marked <Badge type="tip" text="Pro" /> or
+<Badge type="warning" text="Enterprise" />.
 
 ::: info Not operational in this release
 A few things exist on the settings page or in a form but do not do what their label suggests
@@ -28,7 +32,8 @@ in this release. They are listed where they appear and summarised under
 The order that avoids backtracking. [Getting Started](./getting-started) walks it with a smoke
 check at the end.
 
-1. Decide the **edition**: stay on Starter, or paste the licence key — [License](#license).
+1. Decide the **edition**: stay on Starter, or install `local_moodeskpro` and paste the licence
+   key — [License](#license).
 2. Check the **mooDesk Agent** role and decide who manages — [Roles](#roles).
 3. Create **categories** and **departments** — [Categories](#categories),
    [Departments](#departments).
@@ -41,38 +46,9 @@ check at the end.
 
 ## Settings reference
 
-In the order the settings page shows them. *Default* is the value a fresh install writes.
-
-### License
-
-| Setting | Key | What it does | Default |
-|---|---|---|---|
-| Licence key | `license_key` | The licence issued by digitalMood for this site. Empty runs the site as Starter. Saving revalidates the key and refreshes the License page. | — |
-| Check for revoked licences | `revocation_enabled` | Fetch the licence revocation list once a day. | on |
-| Revocation list URL | `revocation_crl_url` | Where the list is downloaded from. Since 2.37.0, upgrading moves a site still on the previous default to the new one; a URL you chose yourself is left alone. | `https://licenses.moodesk.io/crl/v2/revocations.json` |
-
-The licence is the only thing that decides the edition: there is no edition setting. Since
-2.39.0 a key is accepted only when it is in the current licence format **and** states an agent
-capacity that its plan allows (see [Agents](#agents)).
-
-After saving a key, open **mooDesk → License** (site administrators only). It shows the
-verdict, the effective edition, the expiry, and the *Agents* row with the active agents
-against the capacity (see [Agents](#agents) for how it reads). When a key is refused the site
-keeps running as **Starter** — nothing is deleted, every agent is kept, Pro and Enterprise
-data stays in the database, and a valid key brings everything back. The page names the reason:
-
-| Status | Meaning |
-|---|---|
-| `missing` | No key saved |
-| `malformed` | The text is not a licence key mooDesk can read |
-| `forged` | The key's signature does not verify against the signing key it names |
-| `untrusted_key` | The key is signed with a key this version of mooDesk does not trust. Licences issued before 2.37.0 show this after upgrading, because 2.37.0 replaced the signing key. Contact [support@moodesk.io](mailto:support@moodesk.io) for a re-issued licence and paste it under *Licence key* |
-| `expired` | The key is past its expiry date |
-| `revoked` | The key is on the revocation list |
-| `site_mismatch` | The key was issued for another site URL — a staging copy of production is the usual case |
-| *Issued for an earlier licence format* | The key was issued in the licence format used before 2.39.0, which this version does not accept. The page reads: *This licence was issued for an earlier licence format and is not accepted by this version of mooDesk. Ask digitalMood for a replacement licence — running as Starter*. Contact [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence and paste it under *Licence key* |
-| *No valid agent capacity* | The key does not state an agent capacity its plan allows. The page reads: *This licence does not state a valid agent capacity for its plan. Ask digitalMood for a replacement licence — running as Starter*. Contact [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence |
-| `nopubkey` | mooDesk cannot read its own verification key: a broken install, reinstall the package |
+In the order each settings page shows them. *Default* is the value a fresh install writes.
+The first four sections are on the **mooDesk** page; the rest, from
+[Email ingestion](#email-ingestion) on, are on the **mooDesk Pro** page.
 
 ### General
 
@@ -80,14 +56,14 @@ data stays in the database, and a valid key brings everything back. The page nam
 |---|---|---|---|
 | Default category | `defaultcategoryid` | Category preselected on the ticket form and used when the selector is hidden. | *General* |
 | Knowledge base | `kb_enabled` | Show the knowledge base: reader, article management, *Suggested articles* on the ticket form, agent tools. Off hides all of it; articles are kept. | on |
-| Knowledge base analytics retention (days) | `kb_analytics_retention_days` | Days anonymous knowledge base events (reads, suggestions shown and opened, links shared) are kept. 30–1095. | 365 |
-| Knowledge base search analytics retention (days) | `kb_search_analytics_retention_days` | Days knowledge base **search** events are kept — shorter because a person typed the words. 30–365. | 90 |
 | Allow file attachments | `attachments_enabled` | Attachments on tickets and replies. | **off** |
 | Maximum attachment size | `max_attachment_size` | Per file. The options mirror Moodle's upload sizes; *Site upload limit* uses the site's `maxbytes`. | site limit |
 | Maximum files per upload | `max_files_per_attachment` | Files per ticket or reply: 1, 2, 3, 5 or 10. | 5 |
 
 Attachments are **off** on a fresh install; switch them on here if requesters or agents should
-be able to attach files.
+be able to attach files. The same limits apply to attachments that arrive by email
+<Badge type="tip" text="Pro" />: a file dropped because attachments are off or over a limit is
+reported to agents in an internal note on the ticket, with its name and size.
 
 ### Notifications
 
@@ -102,15 +78,28 @@ what and how users manage them.
 | Notify agent on assignment | `notify_assignee_assign` | The new assignee, when a ticket is assigned or reassigned | on |
 | Notify on SLA breach | `notify_sla_breach` | The assignee — every agent if there is none — when a ticket enters SLA breach | on |
 
+#### Operator alerts and retention
+
+These settings follow the four switches in the *Notifications* section. They apply on every
+edition: System Health is part of `local_moodesk`.
+
+| Setting | Key | What it does | Default |
+|---|---|---|---|
+| Unknown-sender alert recipients | `email_alert_recipients` | Comma-separated list of Moodle **user IDs** of the people who receive operator alerts (System Health incidents and, with email ingestion, refused senders). Empty = the site administrators | — |
+| Alert from severity | `incident_alert_severity` | Lowest System Health severity that sends an operator alert: *warning* · *error* · *critical* | error |
+| Alert cooldown (minutes) | `incident_alert_cooldown` | Minimum time between alerts for the same incident | 60 |
+| Active incident window (hours) | `incident_active_window_hours` | How long after its last occurrence an incident still counts as a current problem on System Health. The row stays; only its status changes. | 24 |
+| Incident retention (days) | `incident_retention_days` | Days an incident is kept after its last occurrence before it is deleted | 90 |
+
 ### Automation
 
 | Setting | Key | What it does | Default |
 |---|---|---|---|
 | Auto-close resolved tickets after (days) | `autoclose_resolved_days` | Days a *Resolved* ticket waits before the nightly task closes it. `0` never auto-closes. | 0 |
-| Merge ordering | `merge_temporal_policy` | Which ticket a merge may close: *Only the older ticket can be merged away* or *Either ticket can be merged away*. <Badge type="warning" text="Enterprise" /> | older |
 
 Automation *rules* (Pro) are not settings; they are created under **mooDesk → Automations** —
-see [Automations](#automations).
+see [Automations](#automations). The merge ordering setting (Enterprise) is on the mooDesk Pro
+page, under [Inbound sender authentication](#inbound-sender-authentication).
 
 ### SLA
 
@@ -128,9 +117,9 @@ targets before you read any compliance figure. How the clocks work is under [SLA
 
 ### Email ingestion <Badge type="tip" text="Pro" />
 
-Turns a dedicated IMAP mailbox into tickets and replies. The `process_incoming_email` task
-polls the mailbox **every 5 minutes** — see
-[Installation → Scheduled tasks](./installation#scheduled-tasks). The full setup —
+On the **mooDesk Pro** page, section *Email Ingestion*. Turns a dedicated IMAP mailbox into
+tickets and replies. The `process_incoming_email` task polls the mailbox **every 5 minutes** —
+see [Installation → Scheduled tasks](./installation#scheduled-tasks). The full setup —
 prerequisites, provider notes, what happens to each incoming message — is in
 [Integrations](./integrations).
 
@@ -163,7 +152,7 @@ header alone.
 |---|---|---|---|
 | Reply address | `email_reply_address` | The support address the token is added to, for example `support@example.org`. The mailbox must deliver sub-addresses (`support+anything@…`) to the same inbox, and the part before `@` may be at most 13 characters. | — |
 | Sub-address delimiter | `email_reply_address_delimiter` | `+` or `-` | `+` |
-| Reply authentication | `email_reply_auth_mode` | *Legacy* (deprecated, transition only) · *Prefer token* (accepts replies with and without a token and counts them) · *Require token* (refuses a reply without a valid token) | **Require token** on a fresh install; **Prefer token** on a site upgraded from an earlier version |
+| Reply authentication | `email_reply_auth_mode` | *Legacy* (deprecated, transition only) · *Prefer token* (accepts replies with and without a token and counts them) · *Require token* (refuses a reply without a valid token) | **Require token** on a fresh install; **Prefer token** on a site upgraded from 2.x (see [Upgrading to 3.0.0](./upgrading-to-3-0-0#email-ingestion-and-replies-by-email)) |
 | Reply token lifetime | `email_reply_token_maxage` | How long a token stays valid | 90 days |
 
 Three rules to know before touching this block:
@@ -197,23 +186,55 @@ from one written by the sender.
 20 evaluated messages, at least 10 authenticated, and at least 80 % with a verdict the profile
 could read. System Health shows the progress. Once on, *Require* never relaxes itself.
 
-#### Operator alerts and retention
-
-These settings appear at the end of the *Inbound sender authentication* section.
+These settings follow at the end of the *Inbound sender authentication* section:
 
 | Setting | Key | What it does | Default |
 |---|---|---|---|
-| Unknown-sender alert recipients | `email_alert_recipients` | Comma-separated list of Moodle **user IDs** of the people who receive operator alerts (refused senders, System Health incidents). Empty = the site administrators | — |
-| Alert from severity | `incident_alert_severity` | Lowest System Health severity that sends an operator alert: *warning* · *error* · *critical* | error |
-| Alert cooldown (minutes) | `incident_alert_cooldown` | Minimum time between alerts for the same incident | 60 |
-| Active incident window (hours) | `incident_active_window_hours` | How long after its last occurrence an incident still counts as a current problem on System Health. The row stays; only its status changes. | 24 |
-| Incident retention (days) | `incident_retention_days` | Days an incident is kept after its last occurrence before it is deleted | 90 |
 | Refused mail retention (days) | `email_audit_retention_days` | Days the identifying details of a refused inbound mail are kept | 90 |
 | Ticket correspondence retention (days) | `email_correspondence_retention_days` | Days the record linking an accepted mail to its ticket or reply is kept | 365 |
 | Deduplication window (seconds) | `email_dedup_window` | Within this window the same Message-ID, or the same sender and subject, is dropped as a duplicate | 300 |
+| Merge ordering | `merge_temporal_policy` | Which ticket a merge may close: *Only the older ticket can be merged away* or *Either ticket can be merged away*. <Badge type="warning" text="Enterprise" /> | older |
 
-The alert and incident settings apply on every edition — System Health is not a licensed
-feature — even though they sit inside a Pro section of the page.
+### License
+
+On the **mooDesk Pro** page, section *License*. Without the add-on there is no licence and the
+site runs as Starter.
+
+| Setting | Key | What it does | Default |
+|---|---|---|---|
+| Licence key | `license_key` | The licence issued by digitalMood for this site. Empty runs the site as Starter. Saving revalidates the key and refreshes the License page. | — |
+| Check for revoked licences | `revocation_enabled` | Fetch the licence revocation list once a day. | on |
+| Revocation list URL | `revocation_crl_url` | Where the list is downloaded from. | `https://licenses.moodesk.io/crl/v2/revocations.json` |
+
+The licence is the only thing that decides between Pro and Enterprise: there is no edition
+setting. A key is accepted only when it is in the current licence format **and** states an
+agent capacity that its plan allows (see [Agents](#agents)).
+
+After saving a key, open **mooDesk → License** (`/local/moodeskpro/license.php`, site
+administrators only). It shows the verdict, the effective edition, the expiry, and the *Agents*
+row with the active agents against the capacity (see [Agents](#agents) for how it reads). When
+a key is refused the site keeps running as **Starter**: nothing is deleted, every agent is
+kept, Pro and Enterprise data stays in the database, and a valid key brings everything back.
+Pages of a feature the licence does not include read *Not included in this site's licence*.
+The License page names the reason a key was refused:
+
+| Status | Meaning |
+|---|---|
+| `missing` | No key saved |
+| `malformed` | The text is not a licence key mooDesk can read |
+| `forged` | The key's signature does not verify against the signing key it names |
+| `untrusted_key` | The key is signed with a key this version of mooDesk does not trust, for example a licence issued before 2.37.0, which replaced the signing key. Existing customers can ask [support@moodesk.io](mailto:support@moodesk.io) for a re-issued licence and paste it under *Licence key* |
+| `expired` | The key is past its expiry date |
+| `revoked` | The key is on the revocation list |
+| `site_mismatch` | The key was issued for another site URL — a staging copy of production is the usual case |
+| *Issued for an earlier licence format* | The key was issued in the licence format used before 2.39.0, which this version does not accept. The page reads: *This licence was issued for an earlier licence format and is not accepted by this version of mooDesk. Ask digitalMood for a replacement licence — running as Starter*. Existing customers can ask [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence and paste it under *Licence key* |
+| *No valid agent capacity* | The key does not state a capacity its plan allows. The page reads: *This licence does not state a valid agent capacity for its plan. Ask digitalMood for a replacement licence — running as Starter*. Existing customers can ask [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence |
+| `nopubkey` | mooDesk cannot read its own verification key: a broken install, reinstall the add-on |
+
+**Expiry reminders.** 30 and 7 days before the licence expires, every site administrator gets
+a notification, by email and popup, saying when it expires; *License status* also shows a
+banner during the last 30 days. After the expiry date the site runs as Starter and no data is
+deleted. A licence is an annual activation key with no automatic renewal.
 
 ### Customer satisfaction (CSAT) <Badge type="tip" text="Pro" />
 
@@ -228,18 +249,26 @@ When a ticket reaches the trigger status, the requester is invited **once per ti
 never again on a later transition:
 
 - **An invitation** goes out through the *Ticket notification* message provider, so the
-  requester's own notification preferences apply. It carries the survey link and how many days
-  it stays valid, with *Custom invitation message* in front of the standard wording when one is
+  requester's own notification preferences apply. It carries the survey link
+  (`/local/moodeskpro/csat.php?token=…`; opening it needs no login) and how many days it stays
+  valid, with *Custom invitation message* in front of the standard wording when one is
   set.
 - **A *How did we do?* card** with a *Rate your experience* button stays on the requester's own
   ticket page while the invitation is open. Only the requester sees it.
 
-Replying to the invitation does not reach the ticket. Before 2.31.0 the invitation was never
-delivered.
+Replying to the invitation does not reach the ticket. Survey links sent before 3.0.0 pointed
+to `/local/moodesk/` and no longer work.
+
+The two knowledge base analytics retention settings follow at the end of this section:
+
+| Setting | Key | What it does | Default |
+|---|---|---|---|
+| Knowledge base analytics retention (days) | `kb_analytics_retention_days` | Days anonymous knowledge base events (reads, suggestions shown and opened, links shared) are kept. 30–1095. | 365 |
+| Knowledge base search analytics retention (days) | `kb_search_analytics_retention_days` | Days knowledge base **search** events are kept — shorter because a person typed the words. 30–365. | 90 |
 
 ### Webhooks <Badge type="warning" text="Enterprise" />
 
-Webhooks themselves are created under **mooDesk → Webhooks**; see
+Webhooks themselves are created under **mooDesk → Webhooks** (`/local/moodeskpro/webhooks.php`); see
 [Integrations](./integrations). The one setting here:
 
 | Setting | Key | What it does | Default |
@@ -249,7 +278,7 @@ Webhooks themselves are created under **mooDesk → Webhooks**; see
 ### API access <Badge type="warning" text="Enterprise" />
 
 This section is shown **only when the active edition is Enterprise**. Tokens are issued under
-**mooDesk → API tokens**; see [API](./api).
+**mooDesk → API tokens** (`/local/moodeskpro/api_tokens.php`); see [API](./api).
 
 | Setting | Key | What it does | Default |
 |---|---|---|---|
@@ -284,10 +313,9 @@ their departments, teams (Pro), open ticket count, and whether mooDesk manages t
 The list filters by department, team, status and managed / unmanaged, and warns about agents
 in no department and departments with no members.
 
-- **Add agent** — search a Moodle user, *Make agent*. At the capacity the screen says so
-  before you pick anyone, the buttons are disabled, and a grant is refused. The notice names
-  the way out for your plan, for example *This site has 2 of 2 agents allowed on Starter. Get
-  a Pro or Enterprise licence to add more agents.*
+- **Add agent** — search a Moodle user, *Make agent*. Without the add-on, at 2 agents the
+  screen reads *This site has 2 of 2 agents allowed on Starter.* before you pick anyone, and
+  the buttons are disabled. With the add-on, *Add agent* never refuses (see below).
 - **Remove** — takes the role away and puts the agent's open tickets back in their
   departments' unassigned pool. Only agents mooDesk manages (those holding the *mooDesk
   Agent* role) can be removed here; an agent who holds the capability through another role
@@ -299,26 +327,35 @@ Who counts as an agent: anyone holding `local/moodesk:agent` at system context w
 suspended nor deleted. Agents given the role through Moodle's own screens, an SSO mapping or
 a script are counted but not managed by mooDesk.
 
-The agent capacity comes from the licence, and every edition has one:
+Every edition has an agent capacity; none is unlimited. Pro and Enterprise come in fixed tiers,
+and the licence states which:
 
 | Edition | Agent capacity |
 |---|---|
-| Starter (no licence, or no valid licence) | 2 |
-| Pro | The capacity on the licence: 10, 15, 20 or 25 (10 included, plus blocks of 5) |
-| Enterprise | The capacity on the licence: 50 to 1000, in steps of 25 (50 included, plus blocks of 25) |
-
-For more than 1000 agents, contact [support@moodesk.io](mailto:support@moodesk.io).
+| Starter (`local_moodesk` alone, or the add-on with no valid licence) | 2 |
+| Pro | The capacity on the licence: 10, 15, 20 or 25 |
+| Enterprise | The capacity on the licence: 50, 75 or 100; more than 100 on request |
 
 The License and System Health pages show the active agents against the capacity and how the
 capacity is made up, for example `12 / 15 agents (10 included + 1 block)`, or `1 / 2 agents`
 when there is no block.
 
-A site can end up **over its capacity**, for example after an upgrade, after a licence with a
-smaller capacity is pasted, or when agents are given the role outside mooDesk. Every agent is
-kept and keeps working: the License and System Health pages show *Agent limit exceeded* with
-*No agent has been removed. New agents cannot be added until the count is back under the
-capacity.* To add agents again, get a licence with the capacity you need, or bring the count
-under the capacity.
+**What happens at the capacity depends on the add-on:**
+
+- **Without `local_moodeskpro`**, *Add agent* stops at 2. Agents given the role through
+  Moodle's own screens are counted but not blocked, and no agent is ever removed.
+- **With `local_moodeskpro`**, no agent is ever refused or blocked. Above the capacity, every
+  agent and feature keeps working, and agents and site administrators see a notice on every
+  mooDesk page until the count is back within the capacity:
+
+  > **This site has more active agents than its licence covers**
+  > *N* active agents, *M* licensed. Until this is regularised, the site is outside support, and
+  > the difference is paid at renewal. No agent or feature is blocked.
+
+  Site administrators also get a *Review licence and agents* link to the License page, which
+  with System Health shows *Agent limit exceeded*. Requesters never see the notice. A licence
+  with a larger capacity takes effect as soon as its key is saved; one with a smaller capacity,
+  or an expiry, removes no one.
 
 An agent must be a member of a department to be assigned its tickets. An agent in no
 department and no team cannot be assigned anything, and the directory says so.
@@ -382,7 +419,7 @@ can be owned by a group as well as by a person.
 | Who can be assigned | Only members of the ticket's department | Unchanged — the team does not restrict assignment |
 | In the queue | *My departments* tab and the Department filter | Team filter |
 
-**mooDesk → Teams** (`local/moodesk:manageteam`): *Add team* (name, description, active),
+**mooDesk → Teams** (`local/moodeskpro:manageteam`): *Add team* (name, description, active),
 *Manage members* works like the department one, and an agent can be in any number of teams.
 Same archive/restore rule as departments.
 
@@ -390,7 +427,7 @@ Same archive/restore rule as departments.
 
 Custom fields add questions of your own to the ticket form — *Campus*, *Student ID*,
 *Affected course* — and show the answers on the ticket. **mooDesk → Custom fields**
-(`local/moodesk:managesettings`).
+(`/local/moodeskpro/custom_fields.php`, capability `local/moodesk:managesettings`).
 
 *Add field*: **name**, **description** (help text under the input), **type**, **options**
 (one per line, dropdowns only), **required**, **visibility**, **sort order**.
@@ -450,13 +487,15 @@ Outgoing mail configuration** does.
 The four switches are listed under [Settings → Notifications](#notifications). Internal
 notes, priority changes and status changes notify nobody.
 
-Three message providers, each enabled by default for email and popup:
+Three message providers in `local_moodesk`, and one more in the add-on, each enabled by
+default for email and popup:
 
 | Provider | Carries |
 |---|---|
 | Ticket notification | The four ticket notifications, and the CSAT invitation (Pro) |
 | Email ingestion alert | Operator alerts from email ingestion — an inbound mail that could not be routed |
 | Operational alert | Operator alerts from System Health — a source that started failing |
+| mooDesk licence expiry reminders | From `local_moodeskpro`: the reminders sent to site administrators 30 and 7 days before the licence expires ([License](#license)) |
 
 They are separate so an operator can silence one without the others. Users manage them under
 **Preferences → Notification preferences** (the *mooDesk* rows); a site administrator sets
@@ -468,7 +507,7 @@ cooldown* for the same incident.
 ## Automations <Badge type="tip" text="Pro" />
 
 A rule watches for something happening to a ticket, checks conditions, and applies actions
-with nobody at the keyboard. **mooDesk → Automations** (`local/moodesk:manageautomations`).
+with nobody at the keyboard. **mooDesk → Automations** (`local/moodeskpro:manageautomations`).
 The list shows each rule's trigger, conditions, actions and order, with an activate /
 deactivate toggle; deleting a rule keeps its execution log.
 
@@ -523,13 +562,14 @@ and an `sla_breached` rule.
 
 ## Known limitations
 
-Configuration that exists in 2.39.0 but does not do what its label suggests:
+Configuration that exists in 3.0.0 but does not do what its label suggests:
 
-| Where | What | Status in 2.39.0 |
+| Where | What | Status in 3.0.0 |
 |---|---|---|
 | Automations | `time_elapsed` trigger | Stored, never evaluated |
-| Scheduled tasks | `sync_license` | Registered and enabled; performs no work |
+| Scheduled tasks (add-on) | `sync_license` | Registered and enabled; performs no work |
+| Scheduled tasks (add-on) | `check_updates` | Registered and enabled; performs no work |
 
 ---
 
-*Verified against mooDesk 2.39.0.*
+*Verified against mooDesk 3.0.0.*
