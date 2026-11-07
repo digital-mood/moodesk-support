@@ -89,7 +89,7 @@ copy runs as Starter. A staging site needs its own key.
 As many as the capacity on your licence, in fixed tiers. Starter allows **2**. Pro: **10, 15,
 20 or 25**. Enterprise: **50, 75 or 100**, and more than 100 on request. No edition is
 unlimited. An *active agent* is a user who holds `local/moodesk:agent` and is neither suspended
-nor deleted. On Starter, *Add agent* stops at 2; agents given the role through Moodle's own role
+nor deleted. Without the add-on, *Add agent* stops at 2; agents given the role through Moodle's own role
 screens are counted but not blocked — [Configuration → Agents](./configuration#agents).
 
 **What happens if my site has more agents than its licence covers?**

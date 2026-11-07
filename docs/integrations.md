@@ -327,8 +327,9 @@ reply without a valid token is refused). A reply without a token can only be thr
 `References` to mail the requester sent earlier — in practice, most replies to a notification
 reach their ticket because of the token, whichever mode is on. A fresh install starts on
 *Require token*; a site upgraded from 2.x lands on *Prefer token* when the add-on is installed.
-The add-on signs reply addresses with a new key, so addresses in notifications sent before
-3.0.0 no longer match their ticket.
+The add-on signs reply addresses with a new key, so the token in a notification sent before
+3.0.0 is not recognised: under *Prefer token* the reply is read as one without a token (and
+threads only through `References`, as above); under *Require token* it is refused.
 
 *Require token* is only safe once a tokenised address is known to reach the mailbox. That is
 what the **round-trip check** on the settings page establishes:

@@ -101,8 +101,9 @@ Without the add-on, a merged ticket is shown as an ordinary closed ticket.
 
 - **The add-on never refuses an agent.** Above the licensed capacity every agent keeps working,
   and agents and administrators see a notice on every mooDesk page until the count is back
-  within the capacity. A site without the add-on keeps its existing agents, but *Add agent*
-  stops at 2. See [Configuration → Agents](./configuration#agents).
+  within the capacity. With the add-on and no valid licence the capacity is 2: above it the
+  notice shows and nothing is blocked. Only a site without the add-on keeps its existing agents
+  but stops *Add agent* at 2. See [Configuration → Agents](./configuration#agents).
 - **Licence expiry reminders.** Site administrators are notified 30 and 7 days before the
   licence expires. See [Configuration → License](./configuration#license).
 - **A feature your licence does not include** shows *Not included in this site's licence*.
@@ -130,12 +131,15 @@ secret of the new subscription. See [Integrations](./integrations#webhooks).
   Ingestion**). Polling stays off until then.
 - **Start from an empty mail folder.** The add-on has no record of the mail that 2.x already
   handled, so on its first poll it would process the last 14 days of mail again.
-- **Reply addresses in notifications sent before 3.0.0** are no longer matched to their
-  ticket: the add-on signs reply addresses with a new key.
 - **Reply authentication.** A site that had the reply authentication setting lands on *Prefer
   token*, so that the upgrade refuses nothing. Choose *Require token* again once you have
   checked your replies. A fresh install starts on *Require token*. See
   [Integrations](./integrations).
+- **Replies to notifications sent before 3.0.0.** The add-on signs reply addresses with a new
+  key, so the token in an older reply address is not recognised. Under *Prefer token* such a
+  reply comes in as a reply without a token: it joins its ticket only if it quotes an email
+  mooDesk already stored, such as an earlier reply by email in the same thread; otherwise it
+  becomes a new ticket. Under *Require token* it is refused.
 
 ### Satisfaction surveys (CSAT)
 
@@ -150,9 +154,12 @@ for it. Without the add-on there is no mooDesk search area.
 
 ### Moodle's schema check
 
+The old tables and columns of the paid features stay on the site. Nothing reads them, and
 Moodle's database schema check (for example `php admin/cli/check_database_schema.php`) lists
-the old tables and columns of the paid features as unexpected. This is expected: 3.0.0 leaves them in
-place, and a later release removes them. Do not delete them by hand.
+them as unexpected. This is expected. Personal data in them is still declared, exported and
+erased by Moodle's privacy requests; an export shows it under *Data from before 3.0.0*. Nothing
+deletes them automatically: a later release will let a site administrator export them and then
+delete them, with explicit confirmation. Do not delete them by hand.
 
 ## After the upgrade
 

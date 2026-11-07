@@ -197,7 +197,8 @@ team cannot be assigned any ticket, and the agent directory flags this.
 **Without the add-on** the limit is 2 agents: at 2, the *Add agent* screen reads
 `This site has 2 of 2 agents allowed on Starter.` and the buttons are disabled.
 
-**With the add-on** nothing is refused. Above the capacity of your licence every agent keeps
+**With the add-on** nothing is refused, even without a valid licence (the capacity is then 2).
+Above the capacity every agent keeps
 working, agents and administrators see a notice on every mooDesk page, and the License and
 System Health pages say *Agent limit exceeded*, until the count is back within the capacity.
 Agents given the role through Moodle's own role screens are counted too.

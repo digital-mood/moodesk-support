@@ -45,13 +45,15 @@ the REST API or email ingestion.
   are 3.0.0.
 - **The paid features move to the add-on.** Teams, custom fields, automation rules, satisfaction
   surveys, reports, dashboard analytics, SLA per department, the agent panel, email ingestion,
-  knowledge base analytics, agent tools, translations and global search are Pro. Agent supervision,
+  knowledge base analytics, knowledge base agent tools, knowledge base translations and global search
+  are Pro. Agent supervision,
   ticket merge, webhooks and the REST API are Enterprise.
 - **Their addresses, settings and capabilities change.** Pages are under `/local/moodeskpro/`,
   settings are under *Site administration → Plugins → Local plugins → mooDesk Pro*, and capabilities
   are `local/moodeskpro:*`.
 - **The add-on never refuses an agent.** Above the licensed capacity every agent keeps working and
-  the notice stays on. Only a site without the add-on stops at 2 agents.
+  the notice stays on. With the add-on and no valid licence the capacity is 2: above it the notice
+  shows and nothing is blocked. Only a site without the add-on stops at 2 agents.
 - **A feature your licence does not include says so plainly.** The page shows *Not included in this
   site's licence*, with no upgrade prompt.
 
@@ -83,13 +85,17 @@ A site that stays on Starter upgrades `local_moodesk` and needs nothing else.
   `local_moodeskpro_*` function names. Tokens issued before 3.0.0 stop working.
 - **Email ingestion:** enter the mailbox settings and password in the add-on; polling stays off until
   then. Start from an empty mail folder, because mail from the last 14 days would be processed again.
-- **Replies by email:** addresses in notifications sent before 3.0.0 are no longer matched to their
-  ticket. A site that had the reply authentication setting lands on *Prefer token*, and a fresh
-  install starts on *Require token*.
+- **Replies by email:** a site that had the reply authentication setting lands on *Prefer token*,
+  and a fresh install starts on *Require token*. Under *Prefer token*, a reply to a notification
+  sent before 3.0.0 comes in as a reply without a token, and it joins its ticket only if it quotes
+  an email mooDesk already stored, such as an earlier reply by email in the same thread. Under
+  *Require token* it is refused.
 - **Satisfaction surveys:** links in invitations sent before 3.0.0 stop working.
 - **Global search:** the knowledge base search area changes, so the index is rebuilt once.
-- **Moodle's schema check** lists the old tables and columns of the paid features as unexpected. They
-  are left in place and a later release removes them.
+- **The old tables and columns of the paid features stay on the site.** Nothing reads them, and
+  Moodle's schema check lists them as unexpected. Personal data in them is still declared, exported
+  and erased by privacy requests. Nothing deletes them automatically: a later release will let a
+  site administrator export them and then delete them, with explicit confirmation.
 
 ## 2.39.1 — 2026-10-24
 

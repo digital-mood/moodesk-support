@@ -344,7 +344,8 @@ when there is no block.
 
 - **Without `local_moodeskpro`**, *Add agent* stops at 2. Agents given the role through
   Moodle's own screens are counted but not blocked, and no agent is ever removed.
-- **With `local_moodeskpro`**, no agent is ever refused or blocked. Above the capacity, every
+- **With `local_moodeskpro`**, no agent is ever refused or blocked, with or without a valid
+  licence (without one the capacity is 2). Above the capacity, every
   agent and feature keeps working, and agents and site administrators see a notice on every
   mooDesk page until the count is back within the capacity:
 
