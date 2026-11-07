@@ -50,7 +50,7 @@ Where else mooDesk writes:
 
 | Log | Where | Holds |
 |---|---|---|
-| Task logs | *Site administration → Server → Tasks → Task logs*, component *mooDesk* | One line per run of each scheduled task, including the per-outcome counts of the mailbox poll and the webhook dispatcher |
+| Task logs | *Site administration → Server → Tasks → Task logs*, component *mooDesk* or *mooDesk Pro* | One line per run of each scheduled task, including the per-outcome counts of the mailbox poll and the webhook dispatcher |
 | Webhook delivery log | *mooDesk → Webhooks*, the *Recent deliveries* list of each webhook | Every attempt with payload, HTTP status and the first 4 KB of the response — [Integrations](./integrations#delivery-retries-and-the-log) |
 | Moodle's error log | The web server's PHP error log; *Debugging* under *Site administration → Development* | Anything that escaped mooDesk's own handling |
 
@@ -59,13 +59,15 @@ Where else mooDesk writes:
 Five questions that settle most reports before any digging.
 
 1. **Is cron running?** *Site administration → Server → Tasks → Scheduled tasks*, filter
-   *mooDesk*: every task shows a recent *Last run* and no *Fail delay*. Notifications, SLA
+   *mooDesk* (and *mooDesk Pro* with the add-on): every task shows a recent *Last run* and no *Fail delay*. Notifications, SLA
    breaches, auto-close, email ingestion, webhook deliveries and operator alerts all depend on
    cron. A site where cron stopped looks like six different bugs at once.
-2. **Which edition is the site actually running?** *mooDesk → License* shows the verdict and
-   the effective edition. A refused key runs the site as **Starter** without deleting anything:
-   Pro and Enterprise screens turn into an upgrade prompt and their tasks do nothing. The
-   verdicts are explained in [Configuration → License](./configuration#license).
+2. **Which edition is the site actually running?** Without the add-on `local_moodeskpro` the
+   site is **Starter** and has no Pro or Enterprise screens. With it, *mooDesk → License* shows
+   the verdict and the effective edition. A refused key runs the site as **Starter** without
+   deleting anything: Pro and Enterprise screens read *Not included in this site's licence*
+   and their tasks do nothing. The verdicts are explained in
+   [Configuration → License](./configuration#license).
 3. **Does the user hold the capability?** Every mooDesk screen and action is a capability at
    system context. *Site administration → Users → Permissions → Check system permissions*
    for the user answers most "I cannot see / cannot do" reports; the table of capabilities is
@@ -90,21 +92,28 @@ cause is documented elsewhere, the link is the fix.
 | *mooDesk* appears in the navigation but every page errors | The upgrade did not complete — tables or roles missing | *Plugins overview* shows a status other than *Up to date* | Run *Site administration → Notifications* to completion, then read the web server's error log |
 | Nothing in the *Administration* group of mooDesk's sidebar | The user has no management capability | *Check system permissions* | Entries appear per capability; the Manager archetype holds them by default |
 | After an upgrade, a page is blank or styled wrongly | Cached templates or JavaScript | Reproduce in a private window | *Site administration → Development → Purge all caches* |
+| Moodle refuses to install `local_moodeskpro` | `local_moodesk` is missing or older than the add-on: the add-on requires `local_moodesk` at the same version or later | *Plugins check* names the missing dependency | Install or upgrade `local_moodesk` first — [Installation → Installing](./installation#installing) |
+| After upgrading to 3.0.0 the Pro or Enterprise features are gone | The add-on `local_moodeskpro` is not installed, or its licence key was not entered again | *Plugins overview*; *mooDesk → License* | Install the add-on and paste the key under **mooDesk Pro → License** — [Upgrading to 3.0.0](./upgrading-to-3-0-0) |
+| After upgrading to 3.0.0, teams, custom fields, automation rules, webhooks or survey responses are empty | Expected: they are not migrated to the add-on | — | Set them up again — [Upgrading to 3.0.0 → What starts empty](./upgrading-to-3-0-0#what-starts-empty) |
+| A bookmark to a Pro or Enterprise page answers *not found* after upgrading to 3.0.0 | Those pages moved from `/local/moodesk/` to `/local/moodeskpro/` | The address | Use the new address, or open the page from mooDesk's sidebar |
+| Moodle's schema check lists mooDesk tables or columns as unexpected | Expected after upgrading to 3.0.0: the old tables and columns of the paid features are left in place | The names belong to the paid features (teams, custom fields, automation, CSAT, webhooks, API tokens…) | Nothing; do not drop them by hand. Privacy requests still cover them, and a later release will let a site administrator export and delete them — [Upgrading to 3.0.0](./upgrading-to-3-0-0#moodle-s-schema-check) |
 | The *mooDesk Agent* role is missing | It is seeded only by a fresh install; deleted roles are not recreated | *Define roles* | Recreate it by hand with the capabilities listed in [Configuration → Roles](./configuration#roles), or reinstall |
 
 ### Licence and editions
 
 | Symptom | Usual cause | Confirm | Do |
 |---|---|---|---|
-| A Pro or Enterprise screen shows an upgrade prompt on a licensed site | The key is refused, so the site is Starter | *mooDesk → License* shows a verdict other than *valid* | Read the verdict: *malformed*, *forged*, *untrusted_key*, *expired*, *revoked*, *site_mismatch*, an earlier licence format, or no valid agent capacity. Each is explained in [Configuration → License](./configuration#license) |
-| The site runs as Starter right after upgrading to 2.37.0 | The licence was issued before 2.37.0, which replaced the licence signing key | The verdict says *untrusted_key* | Contact [support@moodesk.io](mailto:support@moodesk.io) for a re-issued licence and paste it under *Licence key*. Nothing was deleted: Pro and Enterprise data comes back with a valid key. See the [2.37.0 upgrade notes](./changelog) |
-| It worked yesterday; today it is Starter | The key expired, or the revocation list now lists it | The verdict says *expired* or *revoked* | Contact [support@moodesk.io](mailto:support@moodesk.io) for a renewed key; paste it under *Licence key*, which revalidates on save |
+| A Pro or Enterprise screen reads *Not included in this site's licence* on a licensed site | The key is refused, so the site is Starter; or the feature belongs to Enterprise and the licence is Pro | *mooDesk → License* shows a verdict other than *valid* | Read the verdict: *malformed*, *forged*, *untrusted_key*, *expired*, *revoked*, *site_mismatch*, an earlier licence format, or no valid agent capacity. Each is explained in [Configuration → License](./configuration#license) |
+| The site runs as Starter right after upgrading to 2.37.0 | The licence was issued before 2.37.0, which replaced the licence signing key | The verdict says *untrusted_key* | Existing customers can ask [support@moodesk.io](mailto:support@moodesk.io) for a re-issued licence and paste it under *Licence key*. Nothing was deleted: Pro and Enterprise data comes back with a valid key |
+| It worked yesterday; today it is Starter | The key expired, or the revocation list now lists it | The verdict says *expired* or *revoked* | Paste a new key under *Licence key*, which revalidates on save. A licence is an annual activation key with no automatic renewal; the add-on sends reminders 30 and 7 days before the expiry |
+| Site administrators received *mooDesk: the … licence expires in …* | Expected: the licence expires within 30 days | *mooDesk → License* shows a banner with the date | Install a new key before the date. After it the site runs as Starter, and no data is deleted |
 | *site_mismatch* on a site that has the right key | The key was issued for another URL — a staging copy of production is the usual case | The verdict names it | A key is bound to one site URL; staging needs its own |
-| *License status* reads *This licence was issued for an earlier licence format and is not accepted by this version of mooDesk. Ask digitalMood for a replacement licence — running as Starter* | The licence was issued in the format used before 2.39.0, which 2.39.0 no longer accepts | The message names it | Contact [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence and paste it under *Licence key*. Nothing was deleted and every agent is kept. See [Installation → Upgrading to 2.39.0](./installation#upgrading-to-2-39-0) |
-| *License status* reads *This licence does not state a valid agent capacity for its plan. Ask digitalMood for a replacement licence — running as Starter* | The licence does not state an agent capacity its plan allows (Pro 10, 15, 20 or 25; Enterprise 50 to 1000 in steps of 25) | The message names it | Contact [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence. Nothing was deleted and every agent is kept in the meantime |
-| *Agent limit exceeded* on License and System Health, with *No agent has been removed. New agents cannot be added until the count is back under the capacity.* | More active agents than the capacity on the licence — for example after an upgrade, a licence with a smaller capacity, or agents given the role through Moodle's own screens | The *Agents* row shows the active agents above the capacity, for example `12 / 10 agents` | Every agent is kept and keeps working, but none can be added. Get a licence with the capacity you need, or bring the count under the capacity — [Configuration → Agents](./configuration#agents) |
+| *License status* reads *This licence was issued for an earlier licence format and is not accepted by this version of mooDesk. Ask digitalMood for a replacement licence — running as Starter* | The licence was issued in the format used before 2.39.0, which 2.39.0 no longer accepts | The message names it | Existing customers can ask [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence and paste it under *Licence key*. Nothing was deleted and every agent is kept. See [Upgrading to 3.0.0 → Before you upgrade](./upgrading-to-3-0-0#before-you-upgrade) |
+| *License status* reads *This licence does not state a valid agent capacity for its plan. Ask digitalMood for a replacement licence — running as Starter* | The licence does not state a capacity its plan allows | The message names it | Existing customers can ask [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence. Nothing was deleted and every agent is kept in the meantime |
+| Every mooDesk page shows *This site has more active agents than its licence covers*, and License and System Health read *Agent limit exceeded* | With the add-on: more active agents than the capacity on the licence — for example after a licence with a smaller capacity, or agents given the role through Moodle's own screens | The *Agents* row shows the active agents above the capacity, for example `12 / 10 agents` | Nothing is blocked: every agent and feature keeps working. Until it is regularised the site is outside support, and the difference is paid at renewal. Bring the count within the capacity, or install a licence with the capacity you need — [Configuration → Agents](./configuration#agents) |
+| *Add agent* reads *This site has 2 of 2 agents allowed on Starter.* | The site has no add-on, and Starter allows 2 agents | *Plugins overview* lists no *mooDesk Pro* | Expected on Starter. Existing agents are kept; Pro and Enterprise need the add-on — [Configuration → Agents](./configuration#agents) |
 | The revocation check never runs | Outbound HTTPS blocked, or `revocation_enabled` off | Task log of `refresh_revocation_list` | Allow `licenses.moodesk.io` — [Installation → Network and privacy](./installation#network-and-privacy) |
-| `sync_license` runs and does nothing | Expected: the task is registered but performs no work in this release | — | Nothing; see [Configuration → Known limitations](./configuration#known-limitations) |
+| `sync_license` or `check_updates` runs and does nothing | Expected: the add-on registers them, but they perform no work in this release | — | Nothing; see [Configuration → Known limitations](./configuration#known-limitations) |
 
 ### Permissions and visibility
 
@@ -121,7 +130,8 @@ cause is documented elsewhere, the link is the fix.
 
 mooDesk never sends mail itself: every notification goes through **Moodle messaging**, and
 every operator alert too. Three providers carry them — *Ticket notification*, *Email
-ingestion alert*, *Operational alert* — described in
+ingestion alert*, *Operational alert* — plus the add-on's *mooDesk licence expiry reminders*,
+described in
 [Configuration → Notifications](./configuration#notifications-1).
 
 | Symptom | Usual cause | Confirm | Do |
@@ -133,6 +143,7 @@ ingestion alert*, *Operational alert* — described in
 | System Health shows `observer.<event>.failed` | The sending threw — usually a messaging or mail failure — and **nothing retries it**: that notification is lost | The incident's message (redacted) | Fix the underlying failure; the next event sends normally |
 | Operator alerts never arrive although incidents exist | The incident is below *Alert from severity*, is inside the cooldown, or was acknowledged; or the recipients list names an ID that is not a user | [Operator alerts and retention](./configuration#operator-alerts-and-retention) | Lower the threshold to *warning* while diagnosing; verify the user IDs |
 | The CSAT invitation is not received | The ticket never reached the trigger status, or the requester silenced *Ticket notification*; it is sent **once per ticket**, never on a later transition | The requester's own ticket page shows a *How did we do?* card while the invitation is open | [Configuration → CSAT](./configuration#customer-satisfaction-csat) |
+| A survey link answers *Invalid or unknown survey link* | The link was sent before 3.0.0, when surveys lived under `/local/moodesk/`; or it is mistyped | The address in the invitation | Expected for invitations sent before 3.0.0; earlier responses are not carried over — [Upgrading to 3.0.0](./upgrading-to-3-0-0#satisfaction-surveys-csat) |
 
 ### Email ingestion and reply by email <Badge type="tip" text="Pro" />
 
@@ -145,6 +156,8 @@ off, OAuth 2.0 on Google and Microsoft 365) are under [Provider notes](./integra
 |---|---|---|---|
 | No mail becomes a ticket, System Health reads **A source is down** | The connection, login or folder select failed: wrong host, port or password, IMAP disabled at the provider, a certificate rejected, a server without STARTTLS while *Connection security* is *STARTTLS*, or a firewall | Incident `email_ingestion.imap.poll_failed`. Its message names the cause: the connection refused, the certificate rejected, no STARTTLS, or the server's answer to a failed login, with the password removed. Before 2.38.1 a certificate rejected on an *SSL/TLS* mailbox read only `IMAP connect failed:  (0)` | Fix the mailbox settings; the next poll clears it. See [Integrations → Connect the mailbox](./integrations#connect-the-mailbox) |
 | No mail becomes a ticket, System Health reads **A source is down** with an `email_ingestion.oauth2.*` incident | The mailbox is set to OAuth 2.0 and cannot sign in | The incident code, below | Follow the remedy for that code in the [incident reference](#email-ingestion-email-ingestion) |
+| No mail becomes a ticket since upgrading to 3.0.0 | The mailbox settings and password were not entered again in the add-on, so polling is off | **mooDesk Pro → Email Ingestion** is empty or disabled | Enter them again — [Upgrading to 3.0.0](./upgrading-to-3-0-0#email-ingestion-and-replies-by-email) |
+| Old mail became tickets again right after upgrading to 3.0.0 | The add-on has no record of the mail 2.x handled, so its first poll processed the last 14 days again | Task log of the first run: `ticket_created` for old messages | Close the duplicates. Before the upgrade, start from an empty folder — [Upgrading to 3.0.0](./upgrading-to-3-0-0#email-ingestion-and-replies-by-email) |
 | No mail becomes a ticket, System Health is green | The task is disabled, cron is not running, or no new mail has arrived in the polled folder. Mail that was moved out of the folder or deleted before a poll is not seen | Task log of `process_incoming_email`: no runs, or `0` outcomes | [First checks](#first-checks); check the folder name, and that no rule or other client moves mail out of it |
 | The settings page warns that the mailbox is polled without encryption | *Connection security* is *None* | System Health, *Mailbox connection*: *Not encrypted* | Choose *SSL/TLS* or *STARTTLS*, with the port your provider gives for it (usually 993 or 143) |
 | Old mail in the folder never became tickets | The first poll of a folder reads only the last 14 days, and leaves alone a message that was already there without a Message-ID (`rescan_skipped_no_message_id`) | Task log of the first run | Expected. Forward any message you still need to the mailbox, so it arrives as new mail. See [How mooDesk reads the mailbox](./integrations#how-moodesk-reads-the-mailbox) |
@@ -153,11 +166,11 @@ off, OAuth 2.0 on Google and Microsoft 365) are under [Provider notes](./integra
 | Every new ticket by mail is refused since *Require* was turned on | The provider profile cannot read a verdict on this mailbox | Incident `email_ingestion.ticket.sender_auth_unreadable` | Choose the right profile, or step back from *Require* — the policy does not change itself |
 | Replies by mail are refused, new tickets work | Reply authentication is *Require token* and the message carried none (`token_required`), or the token did not verify (`token_invalid`), or a valid token came from another address (`token_sender_mismatch`) | Task log outcome; matching `email_ingestion.reply.*` incident | [Integrations → Modes and the round-trip check](./integrations#modes-and-the-round-trip-check) |
 | Replies are refused and an *error* incident says the address is unproven | *Require token* is on but the round-trip probe for the current reply address never came back | Incident `email_ingestion.reply.token_address_unproven` | Fix the reply address and run the probe again. See [Modes and the round-trip check](./integrations#modes-and-the-round-trip-check) |
-| A reply by mail lands as a new ticket | Threading failed: the reply link was stripped by the mail client, or the mode is *Legacy* with its limits. On a site installed fresh before 2.38.1, notifications also used the no-reply address: the site had no key to sign reply addresses | [Integrations → Modes](./integrations#modes-and-the-round-trip-check); the *Reply-To* of a notification is the no-reply address instead of `support+…` | Ask the sender to reply to the notification unedited; prefer token mode. Upgrade to 2.38.1 or later, which creates the missing key |
+| A reply by mail lands as a new ticket | Threading failed: the reply link was stripped by the mail client, or the mode is *Legacy* with its limits. A reply to a notification sent **before 3.0.0** carries a token the add-on does not recognise: under *Prefer token* it threads only if it quotes an email mooDesk already stored (under *Require token* it is refused). On a site installed fresh before 2.38.1, notifications also used the no-reply address: the site had no key to sign reply addresses | [Integrations → Modes](./integrations#modes-and-the-round-trip-check); the *Reply-To* of a notification is the no-reply address instead of `support+…` | Ask the sender to reply to the notification unedited; prefer token mode. Upgrade to 2.38.1 or later, which creates the missing key |
 | The same mail creates two tickets | Sent twice outside the deduplication window (300 s by default) | Task log shows two `ticket_created` | Raise `email_dedup_window` if your provider re-delivers — [Operator alerts and retention](./configuration#operator-alerts-and-retention) |
 | One message never becomes a ticket | It cannot be parsed (`email_ingestion.parse.failed`: retried, then set aside on the retry list), it cannot be stored (`email_ingestion.message.unprocessable`, set aside for good), or it was abandoned from a full retry list (`email_ingestion.cursor.retry_abandoned`) | Matching incident | Ask the sender to send it again; if it recurs, report it with the sanitised headers |
 | A large message never becomes a ticket | It is over *Maximum message size* (50 MB by default) and was not downloaded | Incident `email_ingestion.message.oversized`, with the message size and the limit | Ask the sender to send it again within the limit. Raising the limit does not bring back a message already recorded |
-| An attachment is missing from a ticket created by mail | Above the size limit — skipped, noted in the task log, no incident — or file storage refused it | Task log line *exceeds max … skipped*; or incident `email_ingestion.attachment.store_failed`. The ticket itself was created | Ask for a smaller file; or check Moodle's data directory |
+| An attachment is missing from a ticket created by mail | Attachments are off, or the file is over the size or per-message limit; or file storage refused it | An internal note on the ticket names each file dropped and its size; or incident `email_ingestion.attachment.store_failed`. The ticket itself was created | Ask for a smaller file, or adjust the limits under [Configuration → General](./configuration#general); or check Moodle's data directory |
 | The sender was refused but received no bounce | Sending the bounce failed | Incident `email_ingestion.bounce.send_failed` — same root cause as [Notifications](#notifications) | Fix outgoing mail |
 
 ### Webhooks <Badge type="warning" text="Enterprise" />
@@ -174,7 +187,8 @@ client**, with 5 attempts and the timeouts described in
 | Deliveries stop after five failures and an incident appears | Expected: the row is abandoned after the fifth attempt | Incident `webhook.delivery.abandoned`, one per webhook | Fix the endpoint, then *Resolve*. Abandoned deliveries are **not** replayed |
 | Deliveries fail permanently right after editing the webhook | The webhook was disabled or deleted while rows were pending — they fail permanently | Delivery log | Expected; re-enable before the queue drains next time |
 | The receiver rejects the signature | The secret was rotated in mooDesk and the receiving end still has the old one, or the receiver computes the signature over a re-serialised body | [Integrations → Verifying the signature](./integrations#verifying-the-signature) | Rotate the secret again and configure the new one on the receiving end straight away; it is shown once |
-| Deliveries arrive without an `X-Signature-256` header | The webhook was created before 2.33.0 without a secret: the list marks it *Unsigned* | The webhook list | Use **Rotate secret** on its edit page, and configure the new secret on the receiving end |
+| Deliveries arrive without an `X-Signature-256` header | The webhook has no secret: the list marks it *Unsigned* | The webhook list | Use **Rotate secret** on its edit page, and configure the new secret on the receiving end |
+| A receiver gets nothing since upgrading to 3.0.0 | Webhooks are not carried over to the add-on | *mooDesk → Webhooks* is empty | Create the subscription again and give the receiver its new secret — [Upgrading to 3.0.0](./upgrading-to-3-0-0#webhooks) |
 | An event you expected never appears in the log | The webhook is not subscribed to it, or the event does not exist — there is no assignment event | [Integrations → Events and payload](./integrations#events-and-payload) | Subscribe; watch `ticket.updated` for the other fields |
 | `webhook.enqueue.failed` or `webhook.queue.row_failed` | A database failure while queuing or processing — the event for that subscription is **lost** | The incident's `exception_class` | Check the database and Moodle's error log; report if it recurs |
 
@@ -198,15 +212,16 @@ without a token issued from mooDesk's **API tokens** page is refused with
 
 | Symptom | Usual cause | Do |
 |---|---|---|
+| Every call fails since upgrading to 3.0.0 | Tokens issued before 3.0.0 no longer work, and the functions are now `local_moodeskpro_*` on the `moodeskpro_api` service | [API](./api) |
 | *You are not allowed to use the rest protocol* | The token's owner lacks `webservice/rest:use`, which no Moodle role holds by default | [API → Before you start](./api#before-you-start) |
-| The *Generate token* form is missing from the API tokens page | The site is not Enterprise | [Licence and editions](#licence-and-editions) |
+| The *Generate token* form is missing from the API tokens page | The site is not Enterprise, or the add-on is not installed | [Licence and editions](#licence-and-editions) |
 
 ### Knowledge base
 
 | Symptom | Usual cause | Confirm | Do |
 |---|---|---|---|
 | A published article is not found by mooDesk's own search | mooDesk's search is a live query, not an index: the article is not published, is *Agents only*, is in another language, or the words are not in its title or body | Open the article as an editor | [Features → Knowledge base](./features#knowledge-base) |
-| A published article is missing from **Moodle's** global search | Global search has not indexed it yet, or a deleted article's document stayed behind | *Site administration → Plugins → Search → Manage global search*; incident `kb.search_index.remove_failed` for a stale hit | Run the global search indexer |
+| A published article is missing from **Moodle's** global search | Global search has not indexed it yet (3.0.0 moved the search area to the add-on, so the index is rebuilt once), the add-on is not installed, or a deleted article's document stayed behind | *Site administration → Plugins → Search → Manage global search*; incident `kb.search_index.remove_failed` for a stale hit | Run the global search indexer |
 | Analytics show no data | Events are recorded per view, vote and search; the report covers at most 90 days and is a Pro feature | Incident `kb.analytics.record_failed` if writes fail | [Features → Knowledge base](./features#knowledge-base) |
 | A translation shows the wrong language | The reader's Moodle language has no row and the fallback chain picked another; the notice says so | Article translations | Add the translation |
 
@@ -224,7 +239,7 @@ as they are and record nothing.
 
 ## Incident reference
 
-Every code mooDesk can write to System Health in 2.39.0, by source. *Retried* says whether
+Every code mooDesk can write to System Health in 3.0.0, by source. *Retried* says whether
 mooDesk itself will try the failed operation again; where it says *no*, the fix is on you and
 the operation has to be redone by hand (or will simply happen next time the event occurs).
 
@@ -263,6 +278,7 @@ All *error*, none retried. `<event>` is one of `ticket_created`, `ticket_replied
 | `email_ingestion.reply.token_address_unproven` | error | *Require token* is on but no probe has confirmed the current reply address: replies are being refused | Each message |
 | `email_ingestion.reply.unauthorised` | warning | The sender may not write to the ticket they answered | No |
 | `email_ingestion.attachment.store_failed` | warning | The ticket or reply was created; one attachment could not be stored | No |
+| `email_ingestion.attachment.note_failed` | warning | Attachments were dropped (off, or over a limit), and the internal note that lists them could not be written. The ticket or reply was created | No |
 | `email_ingestion.alert.send_failed` | warning | The operator alert about a refusal could not be sent | No |
 | `email_ingestion.bounce.send_failed` | warning | The bounce telling a sender their mail was refused could not be sent | No |
 
@@ -284,6 +300,8 @@ poll, and the poll moves past it.
 |---|---|---|---|
 | `scheduled_task.check_sla.ticket_failed` | error | The hourly SLA check failed on one ticket and continued with the rest | Next run |
 | `scheduled_task.autoclose.ticket_failed` | error | The daily auto-close failed on one ticket and continued with the rest | Next run |
+| `scheduled_task.license_expiry.delivery_failed` | warning | A licence expiry reminder could not be delivered to every site administrator. **Do:** check outgoing mail and the administrators' preferences for *mooDesk licence expiry reminders* | Next run, up to 3 attempts |
+| `scheduled_task.license_expiry.gave_up` | error | The reminder still failed after 3 attempts and is not retried again | No |
 
 ### Knowledge base (`knowledge_base`)
 
@@ -319,4 +337,4 @@ addresses, hostnames and IDs before attaching them.
 
 ---
 
-*Verified against mooDesk 2.39.0.*
+*Verified against mooDesk 3.0.0.*

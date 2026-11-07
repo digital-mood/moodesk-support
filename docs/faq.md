@@ -14,44 +14,52 @@ how mooDesk behaves when it works.
 **What is mooDesk?**
 A help desk that runs inside Moodle: tickets, departments, SLA targets, a knowledge base and an
 agent workspace, built on Moodle's own users, roles, notifications and privacy tooling. It is a
-`local` plugin, `local_moodesk`, developed and maintained by digitalMood. The full feature list is
+`local` plugin, `local_moodesk`, with an add-on, `local_moodeskpro`, for the Pro and Enterprise
+editions, developed and maintained by digitalMood. The full feature list is
 on [Features](./features).
 
 **Is it free?**
-The **Starter** edition is free software under the GPL v3, with no licence key and no time
-limit. **Pro** and **Enterprise** are unlocked by a licence key on the same package — see
-[Editions and licence](#editions-and-licence).
+The **Starter** edition, `local_moodesk`, is free software under the GPL v3, with no licence
+key and no time limit. **Pro** and **Enterprise** need the add-on `local_moodeskpro` and a
+licence key — see [Editions and licence](#editions-and-licence).
 
 **Is mooDesk part of Moodle, or endorsed by Moodle HQ?**
 No. mooDesk is an independent third-party plugin and is not affiliated with or endorsed by
 Moodle HQ. Moodle® is a registered trademark of Moodle Pty Ltd.
 
 **Which Moodle versions does it support?**
-Moodle **4.5 LTS** or later, on PHP 8.1 or later, with MariaDB or PostgreSQL (MySQL is no longer listed as
-supported since 2.38.0). The detail, including what the CI matrix actually covers, is in
+Moodle **4.5 LTS** or later, on PHP 8.1 or later, with MariaDB, MySQL 8.4 or PostgreSQL (MySQL is
+supported again since 3.0.0). The detail, including what the CI matrix actually covers, is in
 [Installation → System requirements](./installation#system-requirements).
 
 **Which languages does it come in?**
-English and Spanish language packs ship with the plugin. Moodle's usual language mechanisms
-apply: a user sees mooDesk in their Moodle language when a pack exists, and in English
-otherwise.
+The packages ship the English language pack. Translations are distributed through Moodle's
+translation system (AMOS) and installed with Moodle's language pack tool. Moodle's usual
+language mechanisms apply: a user sees mooDesk in their Moodle language when a pack is
+installed, and in English otherwise.
 
 **Where do I download it?**
-The download location is not yet published on this portal; see
-[Installation → Getting the package](./installation#getting-the-package).
+Starter, `local_moodesk`, is listed free on the Moodle Marketplace; Pro and Enterprise are the
+paid `local_moodeskpro` listing there. See
+[Installation → Getting the packages](./installation#getting-the-packages).
+
+<!-- TODO: Marketplace listing URLs for local_moodesk and local_moodeskpro, once published -->
 
 ## Editions and licence
 
 **Which edition am I running?**
-**mooDesk → License** shows the effective edition and the reason for it. There is no edition
-selector: a site with no key, or with a key that is refused, runs as Starter; a valid key sets
-the edition from its own `tier`. What each edition includes is the table in
+A site without the add-on `local_moodeskpro` runs Starter. With the add-on, **mooDesk →
+License** shows the effective edition and the reason for it. There is no edition selector: a
+site with no key, or with a key that is refused, runs as Starter; a valid key sets the edition
+from its own `tier`. What each edition includes is the table in
 [Features → Editions at a glance](./features#editions-at-a-glance).
 
-**How do I get a licence?**
-Contact [support@moodesk.io](mailto:support@moodesk.io) for licensing information. A key is issued for one site URL and pasted
-into **Site administration → Plugins → Local plugins → mooDesk → Licence key**; saving it
-revalidates immediately — [Configuration → License](./configuration#license).
+**What does a site need for Pro or Enterprise?**
+Two things: the add-on `local_moodeskpro`, installed on top of `local_moodesk`, and a licence
+key for the site. Pro and Enterprise are the paid `local_moodeskpro` listing on the Moodle
+Marketplace. A key is issued for one site URL and pasted into **Site administration → Plugins
+→ Local plugins → mooDesk Pro → License → Licence key**; saving it revalidates immediately —
+[Configuration → License](./configuration#license).
 
 **I pasted the key and nothing unlocked.**
 The License page names the reason — *malformed*, *forged*, *untrusted_key*, *expired*,
@@ -60,50 +68,51 @@ does not state a valid agent capacity for its plan — and each is explained in
 [Configuration → License](./configuration#license). The site keeps running as Starter in the
 meantime, nothing is lost and every agent is kept.
 
-**After upgrading to 2.39.0 the site runs as Starter.**
-2.39.0 accepts only licences in the current format, which states the agent capacity. A licence
-issued in the earlier format shows *This licence was issued for an earlier licence format and
-is not accepted by this version of mooDesk*. Contact [support@moodesk.io](mailto:support@moodesk.io) for a replacement licence and paste
-it under *Licence key*. Nothing is deleted and every agent is kept in the meantime —
-[Installation → Upgrading](./installation#upgrading).
+**After upgrading to 3.0.0 the site runs as Starter.**
+Pro and Enterprise moved to the add-on `local_moodeskpro`. Install it and paste the licence key
+again in its settings; until then the site runs as Starter. Some data and settings of the paid
+features start empty on the add-on and must be set up again —
+[Upgrading to 3.0.0](./upgrading-to-3-0-0).
 
-**After upgrading to 2.37.0 the site runs as Starter.**
-2.37.0 replaced the licence signing key, so a licence issued before it shows *untrusted_key*.
-Contact [support@moodesk.io](mailto:support@moodesk.io) for a re-issued licence and paste it under *Licence key*. Nothing is deleted
-in the meantime — [Installation → Upgrading](./installation#upgrading).
+**The add-on says my licence was issued for an earlier licence format, or reads *untrusted_key*.**
+The add-on accepts only licences in the current format, introduced in 2.39.0, signed with the
+key introduced in 2.37.0. Existing customers can ask
+[support@moodesk.io](mailto:support@moodesk.io) for a replacement licence and paste it under
+*Licence key*. Nothing is deleted and every agent is kept in the meantime —
+[Configuration → License](./configuration#license).
 
 **Can I use my production licence on a staging copy?**
 No. The key is bound to one site URL; on any other it is refused as *site_mismatch* and the
 copy runs as Starter. A staging site needs its own key.
 
 **How many agents can I have?**
-As many as the capacity on your licence. Starter, without a licence, allows **2**. Pro allows
-the capacity on its licence: **10, 15, 20 or 25**. Enterprise allows **50 to 1000**, in steps
-of 25. Every edition has a fixed capacity; for more than 1000 agents, contact [support@moodesk.io](mailto:support@moodesk.io). An *active
-agent* is a user who holds `local/moodesk:agent` and is neither suspended nor deleted. *Add
-agent* stops at the capacity and names the way out for your plan; agents given the role through
-Moodle's own role screens are counted but not blocked —
-[Configuration → Agents](./configuration#agents).
+As many as the capacity on your licence, in fixed tiers. Starter allows **2**. Pro: **10, 15,
+20 or 25**. Enterprise: **50, 75 or 100**, and more than 100 on request. No edition is
+unlimited. An *active agent* is a user who holds `local/moodesk:agent` and is neither suspended
+nor deleted. Without the add-on, *Add agent* stops at 2; agents given the role through Moodle's own role
+screens are counted but not blocked — [Configuration → Agents](./configuration#agents).
 
-**What happens if my site has more agents than its capacity?**
-Nothing is removed. This can happen after an upgrade, or when a licence with a smaller capacity
-is pasted. Every agent is kept and keeps working; the License page and System Health show
-*Agent limit exceeded* and *No agent has been removed. New agents cannot be added until the
-count is back under the capacity.* Get a licence with the capacity you need, or bring the count
-under it.
+**What happens if my site has more agents than its licence covers?**
+With the add-on, nothing is refused, removed or blocked: every agent and feature keeps working.
+Agents and administrators see a notice on every mooDesk page, *This site has more active agents
+than its licence covers*, until the count is back within the capacity. Until it is
+regularised the site is outside support, and the difference is paid at renewal. Requesters
+never see the notice — [Configuration → Agents](./configuration#agents).
 
 **What happens to Pro or Enterprise data if the licence expires?**
-Nothing is deleted. Teams, custom fields, rules, ratings, articles, webhooks and tokens stay in
-the database; their screens show an upgrade notice and their tasks do nothing. A new key brings
-everything back as it was.
+Nothing is deleted. Site administrators are reminded 30 and 7 days before the expiry. After
+it, teams, custom fields, rules, ratings, articles, webhooks and tokens stay in the database;
+their screens read *Not included in this site's licence* and their tasks do nothing. A new key
+brings everything back as it was. A licence is an annual activation key with no automatic
+renewal.
 
 **Does mooDesk contact digitalMood to check the licence?**
-The key itself is verified on your server against a public key embedded in the plugin; no
-call is made to validate it. What does go out is one download a day of the signed **licence
-revocation list**, a public file. That request sends no licence key, user records or ticket
-content. Like any HTTP request it exposes your server's IP address. Up to and including 2.39.0
-it also sends your site URL, inside Moodle's default User-Agent; from 2.39.1 it sends the fixed
-User-Agent `moodesk-crl/2`, without the site URL. It can be switched off — [Installation → Network and privacy](./installation#network-and-privacy).
+Starter has no licence and contacts nobody. With the add-on, the key is verified on your server
+against a public key embedded in the add-on; no call is made to validate it. What does go out
+is one download a day of the signed **licence revocation list**, a public file. That request
+sends no licence key, user records or ticket content, and its User-Agent is the fixed
+`moodesk-crl/2`, without your site URL. Like any HTTP request it exposes your server's IP
+address. It can be switched off — [Installation → Network and privacy](./installation#network-and-privacy).
 
 ## Agents and permissions
 
@@ -158,7 +167,7 @@ closed it. Set the value to `0` to stop it — [Configuration → Automation](./
 
 **Is there an audit trail of changes to a ticket?**
 Yes: every change is written to the ticket's history and included in the user's privacy
-export. The history is **not shown on the ticket page** in 2.39.0.
+export. The history is **not shown on the ticket page** in 3.0.0.
 
 **Can tickets be merged?**
 On Enterprise. A duplicate is merged into a target and becomes read-only; the merge can be
@@ -203,7 +212,7 @@ the window the same Message-ID, or the same sender and subject, is dropped as a 
 
 **Can a rule fire twice on the same ticket?**
 No. Each rule fires **at most once per ticket**, whatever the trigger, and the outcome is
-logged. A rule with the `time_elapsed` trigger never fires in 2.39.0: it can be saved but is
+logged. A rule with the `time_elapsed` trigger never fires in 3.0.0: it can be saved but is
 not evaluated — [Configuration → Automations](./configuration#automations).
 
 **What fires the `ticket.updated` webhook?**
@@ -211,6 +220,11 @@ A change of priority, category, department or team, and any status change other 
 *Resolved* — that one fires `ticket.resolved`. Public replies fire `ticket.replied`; internal
 notes and assignment changes fire nothing. All six events and their payloads are in
 [Integrations → Events and payload](./integrations#events-and-payload).
+
+**My API calls stopped working after upgrading to 3.0.0.**
+The API moved to the add-on: functions are now `local_moodeskpro_*` on the `moodeskpro_api`
+service, and tokens issued before 3.0.0 no longer work. Issue new tokens and change the function
+names — [Upgrading to 3.0.0 → REST API](./upgrading-to-3-0-0#rest-api).
 
 **When does an API token expire?**
 `api_token_lifetime_days` after it is issued — 365 by default, `0` for never — fixed at
@@ -232,8 +246,8 @@ is the first of the [first checks](./troubleshooting#first-checks).
 
 **How often do the tasks run?**
 Webhook deliveries every minute; mail ingestion and operator alerts every five minutes; the
-SLA check hourly; auto-close at 02:00; the licence tasks at 03:00 and 03:30; the retention
-sweeps between 04:20 and 05:50. The table with every task is in
+SLA check hourly; auto-close at 02:00; with the add-on, the licence tasks at 03:00, 03:30 and
+03:45; the retention sweeps between 04:20 and 05:50. The table with every task is in
 [Installation → Scheduled tasks](./installation#scheduled-tasks).
 
 ## CSAT and knowledge base
@@ -242,19 +256,22 @@ sweeps between 04:20 and 05:50. The table with every task is in
 When the ticket reaches the trigger status — *Resolved* by default — and CSAT is enabled: an
 invitation goes out through the *Ticket notification* provider, and their own ticket page
 shows a *How did we do?* card while the link is valid. It is sent **once per ticket**; a
-later transition does not send it again — [Configuration → CSAT](./configuration#customer-satisfaction-csat).
+later transition does not send it again. Links in invitations sent before 3.0.0 no longer
+work — [Configuration → CSAT](./configuration#customer-satisfaction-csat).
 
 **Where do knowledge base ratings and reads go?**
 A rating is one person's current answer per article translation, exported and erased with
 the user. Reads, suggestions and searches are anonymous events kept for a configurable time
 — 365 days by default, 90 for searches, since a person typed those words; search text is
 kept only for searches that found nothing, redacted —
-[Configuration → General](./configuration#general).
+[Configuration → CSAT](./configuration#customer-satisfaction-csat), where the mooDesk Pro page
+lists the two retention settings.
 
 **Why do articles not appear in Moodle's global search?**
-Global search of articles is a **Pro** feature and needs Moodle's global search enabled with a
-search engine, the *Knowledge base articles (mooDesk)* search area enabled, and the indexing
-task run since the article was published. mooDesk's own search on the *Knowledge* page needs
+Global search of articles is a **Pro** feature of the add-on and needs Moodle's global search
+enabled with a search engine, the *Knowledge base articles (mooDesk)* search area enabled, and the indexing
+task run since the article was published (3.0.0 moved the search area to the add-on, so the
+index is rebuilt once). mooDesk's own search on the *Knowledge* page needs
 none of that.
 
 **Can an article be in several languages?**
@@ -269,12 +286,11 @@ In your Moodle database and file storage, in mooDesk's own tables. There is no m
 cloud component and nothing is synchronised elsewhere.
 
 **What leaves the server?**
-Three things, each disclosed and each under your control:
+On Starter, nothing. With the add-on, three things, each disclosed and each under your control:
 
 - the daily download of the **licence revocation list**, a public file. The request sends no
-  licence key, user records or ticket content; it exposes your server's IP address and, up to
-  and including 2.39.0, your site URL through Moodle's default User-Agent (2.39.1 and later
-  send a fixed User-Agent without it; the download can be switched off);
+  licence key, user records or ticket content, and no site URL; it exposes your server's IP
+  address. The download can be switched off;
 - **webhook deliveries** (Enterprise), which carry ticket data to the URLs an administrator
   entered;
 - the **IMAP connection** to the mailbox an administrator configured (Pro), where mooDesk reads
@@ -307,10 +323,11 @@ Open an issue through [Support](./support) — bug report, feature request or do
 issue. Issues are public: never include licence keys, tokens, passwords, email addresses or
 real user data, and sanitise logs before attaching them.
 
-**Is there commercial support?**
-Contact [support@moodesk.io](mailto:support@moodesk.io) for licensing and account questions. Bug reports, feature
-requests and documentation issues go through [Support](./support).
+**Who do existing customers contact privately?**
+Customers with a licence can write to [support@moodesk.io](mailto:support@moodesk.io) for a
+replacement licence and account questions. Bug reports, feature requests and documentation
+issues go through [Support](./support).
 
 ---
 
-*Verified against mooDesk 2.39.0.*
+*Verified against mooDesk 3.0.0.*

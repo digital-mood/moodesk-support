@@ -26,7 +26,8 @@ Some topics do not belong in a public issue. Write to
 - **Security vulnerabilities** — use a subject line starting with `[Security]`, and see the
   [security policy](https://github.com/digital-mood/moodesk-support/blob/main/SECURITY.md)
   for what to include.
-- **Licence and account questions** — getting, renewing or replacing a licence key.
+- **Licence and account questions from existing customers** — replacing a licence key, or a
+  question about your account.
 
 Bug reports, feature requests and documentation issues still go through GitHub Issues, using
 the links above.

@@ -22,7 +22,7 @@ export default defineConfig({
     siteTitle: 'mooDesk',
 
     nav: [
-      { text: 'Guide', link: '/getting-started', activeMatch: '^/(getting-started|installation|configuration)' },
+      { text: 'Guide', link: '/getting-started', activeMatch: '^/(getting-started|installation|upgrading-to-3-0-0|configuration)' },
       { text: 'Features', link: '/features', activeMatch: '^/features' },
       { text: 'Integrations', link: '/integrations', activeMatch: '^/integrations' },
       { text: 'API', link: '/api', activeMatch: '^/api' },
@@ -45,6 +45,7 @@ export default defineConfig({
         items: [
           { text: 'Getting Started', link: '/getting-started' },
           { text: 'Installation', link: '/installation' },
+          { text: 'Upgrading to 3.0.0', link: '/upgrading-to-3-0-0' },
           { text: 'Configuration', link: '/configuration' }
         ]
       },

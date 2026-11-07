@@ -10,12 +10,20 @@ working with the knowledge base from another system. It is delivered through **M
 own web services**: there is no separate server, no separate authentication path and no
 separate URL scheme.
 
+::: warning Renamed in 3.0.0
+The API now lives in the add-on `local_moodeskpro`. The functions are `local_moodeskpro_*`
+(formerly `local_moodesk_*`), the service is `moodeskpro_api` (formerly `moodesk_api`) and the
+token capability is `local/moodeskpro:useapi`. **Tokens issued before 3.0.0 stop working**:
+issue new ones and change your calls. See
+[Upgrading to 3.0.0 → REST API](./upgrading-to-3-0-0#rest-api).
+:::
+
 | | |
 |---|---|
-| **Edition** | Enterprise. On Starter and Pro every call is refused with `featurenotavailable` before any work happens. |
+| **Edition** | Enterprise, with the add-on `local_moodeskpro`. On Pro every call is refused with `featurenotavailable` before any work happens. A site without the add-on has no API. |
 | **Transport** | Moodle's REST server, `/webservice/rest/server.php`, JSON or XML |
-| **Service** | `moodesk_api` (shown as *mooDesk API* in Moodle's web services administration) |
-| **Authentication** | A Moodle web service token bound to `moodesk_api`, issued from mooDesk's **API tokens** page. Tokens from any other source, and username/password access, are refused ([details](#tokens-not-issued-by-moodesk)). |
+| **Service** | `moodeskpro_api` (shown as *mooDesk REST API* in Moodle's web services administration) |
+| **Authentication** | A Moodle web service token bound to `moodeskpro_api`, issued from mooDesk's **API tokens** page. Tokens from any other source, and username/password access, are refused ([details](#tokens-not-issued-by-moodesk)). |
 | **Functions** | 21 — 6 for tickets, 2 for merges, 5 for webhooks, 8 for the knowledge base |
 | **Authorisation** | Edition → token policy → rate limit → the owner's Moodle capabilities → the token's scopes |
 | **Rate limit** | Per token, 300 requests per 60 seconds by default, HTTP 429 when exceeded |
@@ -33,7 +41,7 @@ three are Moodle's, and mooDesk cannot switch them on for you.
 
 | Where | Requirement | Symptom when missing |
 |---|---|---|
-| **mooDesk** | The active edition is **Enterprise** ([License](./configuration#license)). The *API access* settings section and the token page's *Generate* form only appear on Enterprise. | `featurenotavailable` |
+| **mooDesk** | `local_moodeskpro` is installed and the active edition is **Enterprise** ([License](./configuration#license)). The *API access* settings section and the token page's *Generate* form only appear on Enterprise. | `featurenotavailable` |
 | **Moodle** | **Web services are enabled** — *Site administration → Server → Web services → Overview*. | `accessexception` — *Web services are not enabled in Advanced features* |
 | **Moodle** | The **REST protocol is enabled** — *… → Web services → Manage protocols*. | Moodle refuses the request before it reaches the plugin |
 | **Moodle** | The token's owner holds **`webservice/rest:use`** at system context. Moodle core declares this capability with **no role archetype**, so no role has it until an administrator grants it — not even *Manager*. | `accessexception` — *You are not allowed to use the rest protocol (missing capability: webservice/rest:use)* |
@@ -43,7 +51,7 @@ deleted, suspended or unconfirmed users, and of users whose authentication metho
 
 The service is **capability-driven**, not user-list driven: there is no *authorised users*
 list to maintain in Moodle's web services administration. Whoever holds a valid token for
-`moodesk_api` can call the functions their capabilities allow, narrowed by the token's scopes.
+`moodeskpro_api` can call the functions their capabilities allow, narrowed by the token's scopes.
 
 ::: tip A dedicated integration user
 Because a token acts as its owner, the cleanest setup is one Moodle user per integration,
@@ -60,9 +68,9 @@ deliveries are drained by a scheduled task — see [Integrations](./integrations
 
 ### Issuing a token
 
-Tokens are issued from **mooDesk → API tokens** (`/local/moodesk/api_tokens.php`, in the
+Tokens are issued from **mooDesk → API tokens** (`/local/moodeskpro/api_tokens.php`, in the
 *Administration* group of mooDesk's sidebar; also listed under *Site administration → Plugins
-→ Local plugins → API Tokens*). Opening the page needs `local/moodesk:useapi`, which the
+→ Local plugins → API Tokens*). Opening the page needs `local/moodeskpro:useapi`, which the
 *Manager* archetype holds by default.
 
 To generate a token, give it a **label** and tick at least one **scope**. The page refuses to
@@ -85,8 +93,8 @@ of configuration. The authorities are separate:
 
 | Action | Requires |
 |---|---|
-| Create, list and revoke **your own** tokens | `local/moodesk:useapi` |
-| Do the same for **another user's** tokens | `local/moodesk:useapi` **and** `moodle/webservice:managealltokens` |
+| Create, list and revoke **your own** tokens | `local/moodeskpro:useapi` |
+| Do the same for **another user's** tokens | `local/moodeskpro:useapi` **and** `moodle/webservice:managealltokens` |
 | Issue a token that acts as a **site administrator** | Being a site administrator |
 
 `moodle/webservice:managealltokens` is a core Moodle capability that ships assigned to no role
@@ -94,14 +102,6 @@ at all. Without it the page is strictly self-service: the *User ID* field is not
 contains only the viewer's own tokens, and revoking a token that belongs to somebody else
 answers `api_token_not_found` — the same as a token that does not exist — so the page cannot be
 used to discover who holds one.
-
-::: warning Upgrading from 2.21.0 or earlier
-Before 2.23.0, any holder of `local/moodesk:useapi` could issue a token bound to any account
-and could list and revoke every token on the site. The upgrade leaves existing tokens
-untouched. Review them once: sign in as a site administrator, open **API tokens** and revoke any
-token whose owner and purpose you cannot account for. See
-[Installation → Upgrading](./installation#upgrading).
-:::
 
 ### Scopes
 
@@ -127,7 +127,7 @@ Since 2.34.0, the API only accepts tokens issued from mooDesk's **API tokens** p
 web service call is refused with `api_token_unmanaged` before the function does anything:
 
 - A token created in Moodle's *Site administration → Server → Web services → Manage tokens*,
-  even one bound to the `moodesk_api` service. Such a token has no mooDesk record and no
+  even one bound to the `moodeskpro_api` service. Such a token has no mooDesk record and no
   scopes, so mooDesk does not accept it.
 - A call through Moodle's username/password entry point, `/webservice/rest/simpleserver.php`.
 
@@ -143,8 +143,8 @@ integration that used one of these methods:
 2. Configure the integration with the new token, and check that its calls succeed.
 3. Revoke the old token in Moodle's *Manage tokens* screen.
 
-The same steps are in the upgrade notes of
-[2.34.0 in the changelog](./changelog#_2-34-0-—-2026-09-30).
+A token issued from the API tokens page before 3.0.0 was bound to the former `moodesk_api`
+service and no longer works either: issue a new one the same way.
 
 ## Making a request
 
@@ -155,7 +155,7 @@ accepts the same parameters on a `GET` query string.
 ```bash
 curl -X POST "https://moodle.example.com/webservice/rest/server.php" \
   -d "wstoken=YOUR_TOKEN" \
-  -d "wsfunction=local_moodesk_list_tickets" \
+  -d "wsfunction=local_moodeskpro_list_tickets" \
   -d "moodlewsrestformat=json" \
   -d "limit=10" \
   -d "offset=0"
@@ -164,7 +164,7 @@ curl -X POST "https://moodle.example.com/webservice/rest/server.php" \
 | Parameter | Value |
 |---|---|
 | `wstoken` | The token, exactly as shown once at generation |
-| `wsfunction` | The function name, always prefixed `local_moodesk_` |
+| `wsfunction` | The function name, always prefixed `local_moodeskpro_` |
 | `moodlewsrestformat` | `json` or `xml`. **Moodle defaults to XML** when the parameter is absent; send `json` explicitly. |
 
 Function parameters follow Moodle's REST conventions: scalars as plain fields, lists as indexed
@@ -298,8 +298,10 @@ Moodle answers them with **HTTP 200**. Check the body, not the status code:
 
 ## Reference
 
-All functions are called as `local_moodesk_<name>`. *Capability* is what the token's owner must
-hold; where two are listed, either is enough. Every function additionally passes the edition
+All functions are called as `local_moodeskpro_<name>`. *Capability* is what the token's owner must
+hold; where two are listed, either is enough. Capabilities are written short: `viewall` means
+`local/moodesk:viewall`, while `managewebhooks`, `mergetickets`, `revertmerge` and
+`viewreports` are the add-on's `local/moodeskpro:*` capabilities. Every function additionally passes the edition
 gate, the token policy and the rate limit.
 
 ### Tickets
@@ -717,23 +719,23 @@ Rates are floats in `[0, 1]`, or `null` when there was nothing to divide.
 
 ## Functions that are not part of the API
 
-Four more external functions exist in mooDesk, registered for the plugin's own pages
-(`ajax => true`) and **not** included in the `moodesk_api` service:
+Four more external functions exist in mooDesk, registered for the plugins' own pages and
+**not** included in the `moodeskpro_api` service:
 
 | Function | Used by |
 |---|---|
-| `local_moodesk_search_active_tickets` | The merge target autocomplete |
-| `local_moodesk_search_kb_articles` | Article suggestions on the New Ticket form |
-| `local_moodesk_search_kb_for_reply` | The *Insert article* tool of the ticket composer |
-| `local_moodesk_set_kb_feedback` | *Was this article helpful?* on an article page |
+| `local_moodeskpro_search_active_tickets` | The merge target autocomplete |
+| `local_moodesk_search_kb_articles` | Article suggestions on the New Ticket form (in `local_moodesk`) |
+| `local_moodeskpro_search_kb_for_reply` | The *Insert article* tool of the ticket composer |
+| `local_moodeskpro_set_kb_feedback` | *Was this article helpful?* on an article page |
 
 They are called with a browser session, not a token, and are gated on their own features
-rather than on `api_access`. A token bound to `moodesk_api` cannot call them, and their
+rather than on `api_access`. A token bound to `moodeskpro_api` cannot call them, and their
 parameters and return values are not a public contract.
 
 ## Not in the API
 
-What an integration might look for and will not find in 2.38.1. None of these has a
+What an integration might look for and will not find in 3.0.0. None of these has a
 workaround inside the API.
 
 | Wanted | Status |
@@ -754,4 +756,4 @@ workaround inside the API.
 
 ---
 
-*Verified against mooDesk 2.38.1.*
+*Verified against mooDesk 3.0.0.*

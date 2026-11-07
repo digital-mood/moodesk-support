@@ -14,12 +14,14 @@ What comes into mooDesk and what goes out, besides the web interface:
 | **Sender authentication** — read your provider's SPF/DKIM/DMARC verdict | in | <Badge type="tip" text="Pro" /> | this page |
 | **Webhooks** — ticket events pushed to a URL of yours | out | <Badge type="warning" text="Enterprise" /> | this page |
 | **REST API** — read and write tickets from another system | in | <Badge type="warning" text="Enterprise" /> | [API](./api) |
-| Notifications, licence revocation list | out | all | [Configuration](./configuration#notifications-1), [Installation](./installation#network-and-privacy) |
+| Notifications | out | all | [Configuration](./configuration#notifications-1) |
+| Licence revocation list | out | Pro, Enterprise (the add-on) | [Installation](./installation#network-and-privacy) |
 
 Every section below separates three responsibilities: what is configured **in mooDesk**, what
 must already work **in Moodle**, and what depends on **your mail or network provider**. The
 settings themselves, with keys and defaults, stay in [Configuration](./configuration); this
-page links to them rather than repeating them.
+page links to them rather than repeating them. Every channel on this page is part of the add-on
+`local_moodeskpro`, and its settings are on the **mooDesk Pro** settings page.
 
 ## Email ingestion <Badge type="tip" text="Pro" />
 
@@ -33,7 +35,7 @@ Workspace and Microsoft 365, with **OAuth 2.0** through a Moodle OAuth 2 service
 |---|---|
 | **Your provider** | A **dedicated** mailbox reachable over IMAP, used by nothing else. Either a password that works over IMAP (on Gmail, an app password), or a Google or Microsoft account that can sign in with OAuth 2.0. **Microsoft 365 accepts OAuth 2.0 only**: Microsoft has turned off password sign-in over IMAP. |
 | **Moodle** | Outgoing mail configured (*Site administration → Server → Email → Outgoing mail configuration*): notifications, operator alerts and the reply-address check all go out through it. Cron running, because the poll is a scheduled task. For OAuth 2.0, an OAuth 2 service under *Site administration → Server → OAuth 2 services* ([Signing in with OAuth 2.0](#signing-in-with-oauth-2-0)). For Microsoft 365 over OAuth 2.0, **Moodle 4.5.5, 5.0.1 or later**. |
-| **mooDesk** | A Pro licence, and nothing else to install. The IMAP client is built into the plugin, so the PHP `imap` extension is **not** required. |
+| **mooDesk** | The add-on `local_moodeskpro` with a Pro or Enterprise licence. The IMAP client is built into the add-on, so the PHP `imap` extension is **not** required. |
 
 The first poll of a folder reads only the **last 14 days** of mail in it
 ([how the mailbox is read](#how-moodesk-reads-the-mailbox)), so an older backlog does not
@@ -42,7 +44,7 @@ become tickets. Within that window, a backlog is drained over several runs, olde
 
 ### Connect the mailbox
 
-In **Site administration → Plugins → Local plugins → mooDesk → Email ingestion**
+In **Site administration → Plugins → Local plugins → mooDesk Pro → Email Ingestion**
 ([settings and defaults](./configuration#email-ingestion)):
 
 1. Enter the **host** and **port**, and choose the **Connection security**:
@@ -72,7 +74,10 @@ In **Site administration → Plugins → Local plugins → mooDesk → Email ing
    minutes** ([Installation → Scheduled tasks](./installation#scheduled-tasks)).
 
 Attachments on incoming mail are stored when [attachments are enabled](./configuration#general),
-within the site's size limit.
+within the size and per-message limits set there. A file that is not stored, because
+attachments are off or it is over a limit, is reported to agents in an internal note on the
+ticket with its name and size. The requester does not see the note, and no file content is
+kept.
 
 ### Signing in with OAuth 2.0
 
@@ -127,10 +132,11 @@ For every message the poll reads, in this order:
    reading the same message twice is harmless.
 6. **Sender authentication.** The verdict your provider stamped on the message is read and
    recorded ([Sender authentication](#sender-authentication)).
-7. **Reply token.** If the message was sent to a tokenised reply address, the token is
-   verified ([Replying by email](#replying-by-email)).
-8. **Threading.** A valid token names the ticket. Without one, `In-Reply-To` / `References`
-   are matched against the Message-IDs of mail mooDesk has **received** for a ticket (kept for
+7. **Reply token.** If any recipient of the message is a tokenised reply address, the token
+   is verified ([Replying by email](#replying-by-email)). The token is found wherever it sits
+   in the recipients, so a reply to all keeps its ticket.
+8. **Threading.** A valid token names the ticket. Without one, every Message-ID in
+   `In-Reply-To` and `References` is matched against the Message-IDs of mail mooDesk has **received** for a ticket (kept for
    the *Ticket correspondence retention* period). mooDesk does not record the Message-ID of
    the notifications it sends, so a reply to a notification threads reliably only through
    the token. A match becomes a **public reply** from the sender. A reply to a **closed**
@@ -164,15 +170,18 @@ poll moves past it. The list holds **20** messages. Past that, the oldest is aba
 `email_ingestion.cursor.retry_abandoned` incident is raised.
 
 **The one-time re-scan.** When mooDesk has no cursor for a folder, it reads the folder from the
-start, once. That happens on the first poll after upgrading to 2.37.0, for a newly connected
-mailbox, and after the host, port, username or folder changes. It also happens when a poll
+start, once. That happens on the first poll after installing the add-on (including the
+upgrade to 3.0.0, see below), for a newly connected mailbox, and after the host, port, username or folder changes. It also happens when a poll
 finds the folder's `UIDVALIDITY` changed: the server renumbered it, for example after a restore
 or after the folder was recreated, and an `email_ingestion.cursor.uidvalidity_changed` incident
 records it. The re-scan:
 
 - reads only messages from the **last 14 days**, so months-old mail that was never ingested does
   not turn into tickets and notify its senders now;
-- recognises messages already handled by their Message-ID and skips them (`already_processed`);
+- recognises messages already handled by their Message-ID and skips them (`already_processed`).
+  After the upgrade to 3.0.0 the add-on has no record of the mail 2.x handled, so the first
+  poll would process the last 14 days again: start from an empty folder
+  ([Upgrading to 3.0.0](./upgrading-to-3-0-0#email-ingestion-and-replies-by-email));
 - leaves alone a message that was already in the folder and has **no Message-ID**
   (`rescan_skipped_no_message_id`), since nothing could tell whether it is already a ticket;
 - respects the per-run cap. The task log says when the re-scan is complete.
@@ -316,8 +325,11 @@ When the token is valid but the `From:` belongs to a different user, the reply i
 are accepted; each kind is counted so you can see what would break), and *Require token* (a
 reply without a valid token is refused). A reply without a token can only be threaded through
 `References` to mail the requester sent earlier — in practice, most replies to a notification
-reach their ticket because of the token, whichever mode is on. A fresh install starts on *Require token*; a site
-upgraded from an earlier version lands on *Prefer token*.
+reach their ticket because of the token, whichever mode is on. A fresh install starts on
+*Require token*; a site upgraded from 2.x lands on *Prefer token* when the add-on is installed.
+The add-on signs reply addresses with a new key, so the token in a notification sent before
+3.0.0 is not recognised: under *Prefer token* the reply is read as one without a token (and
+threads only through `References`, as above); under *Require token* it is refused.
 
 *Require token* is only safe once a tokenised address is known to reach the mailbox. That is
 what the **round-trip check** on the settings page establishes:
@@ -401,7 +413,8 @@ ticket. Deliveries are queued, retried, signed and logged.
 
 ### Create a webhook
 
-**mooDesk → Webhooks** (`managewebhooks`). *Add webhook* asks for a **name**, the **URL**, a
+**mooDesk → Webhooks** (`/local/moodeskpro/webhooks.php`, capability
+`local/moodeskpro:managewebhooks`). *Add webhook* asks for a **name**, the **URL**, a
 **signing secret**, **Active**, and the **events** to subscribe to (at least one). Once saved,
 **Send test ping** posts a `test.ping` payload to the URL right away and shows the HTTP status
 it got back. The recent deliveries of each webhook are listed with event, time, HTTP status and
@@ -415,10 +428,14 @@ lost, or might have leaked, use **Rotate secret** in the *Signing secret* panel 
 edit page. That generates a new secret, shows it once the same way, and signs deliveries with
 it straight away, so the receiving end rejects them until it is updated.
 
-Webhooks created before 2.33.0 keep their secret and keep working. The list marks a webhook
-as *Signed*, as *Unsigned* (no secret: deliveries carry no signature) or as *Weak secret*
-(shorter than 32 characters). Rotate the secret of an *Unsigned* or *Weak secret* webhook to
-replace it with a generated one.
+The list marks a webhook as *Signed*, as *Unsigned* (no secret: deliveries carry no signature)
+or as *Weak secret* (shorter than 32 characters). Rotate the secret of an *Unsigned* or *Weak
+secret* webhook to replace it with a generated one.
+
+::: info Upgrading from 2.x
+Webhooks are not carried over to the add-on: create each subscription again on 3.0.0 and give
+its receiver the new secret. See [Upgrading to 3.0.0](./upgrading-to-3-0-0#webhooks).
+:::
 
 | Who | What |
 |---|---|
@@ -496,7 +513,7 @@ X-Signature-256: sha256=3f5a…e0c1
 - `X-Moodesk-Timestamp` is the Unix time (seconds) of **this delivery attempt** — a retry is
   re-stamped and re-signed, so it can differ from the `timestamp` inside the body.
 - `X-Signature-256` is present whenever the webhook has a **secret**, which every webhook
-  created since 2.33.0 has. A webhook marked *Unsigned* on the list sends none, and nothing
+  created on the add-on has. A webhook marked *Unsigned* on the list sends none, and nothing
   about its requests proves they came from mooDesk. Rotate its secret before any endpoint
   acts on what it receives.
 - The signature is **HMAC-SHA256** over the string
@@ -538,8 +555,8 @@ middleware touches it.
 
 ## Other connections
 
-- **Licence revocation list** — the one outbound request mooDesk makes on its own, once a
-  day; what it fetches, what the request exposes and how to allow it through an egress
+- **Licence revocation list** — with the add-on, the one outbound request mooDesk makes on its
+  own, once a day (Starter makes none); what it fetches, what the request exposes and how to allow it through an egress
   firewall is under
   [Installation → Network and privacy](./installation#network-and-privacy).
 - **REST API** <Badge type="warning" text="Enterprise" /> — token-authenticated endpoints for
@@ -564,4 +581,4 @@ middleware touches it.
 
 ---
 
-*Verified against mooDesk 2.38.1.*
+*Verified against mooDesk 3.0.0.*

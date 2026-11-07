@@ -16,7 +16,8 @@ body:
     id: moodesk-version
     attributes:
       label: mooDesk version
-      placeholder: "e.g. 1.2.0"
+      description: From Site administration → Plugins → Plugins overview. On Pro or Enterprise, give the versions of both mooDesk and mooDesk Pro.
+      placeholder: "e.g. 3.0.0"
     validations:
       required: true
 
