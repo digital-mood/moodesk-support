@@ -164,9 +164,10 @@ Three rules to know before touching this block:
   refuses replies by mail until the address is set and verified. New tickets by mail are not
   affected. System Health says so.
 - *Legacy* is not a way to keep replies working without tokens. Without a token, mooDesk can
-  only thread a reply through `In-Reply-To` / `References` to mail it has **received** for
-  that ticket — it does not record the Message-ID of the notifications it sends — so a reply
-  to a notification is not reliably matched to its ticket in this mode. Keep the token
+  only thread a reply through `In-Reply-To` / `References`: to mail it has **received** for
+  that ticket or, from 3.0.1, to a notification it sent — unless the site's outgoing mail
+  server replaces the notification's identifier, as Exchange Online and Microsoft 365 do. A
+  reply to a notification is not reliably matched to its ticket in this mode. Keep the token
   mechanism on; see [Integrations → Replying by email](./integrations#replying-by-email).
 
 ### Inbound sender authentication <Badge type="tip" text="Pro" />
@@ -192,7 +193,7 @@ These settings follow at the end of the *Inbound sender authentication* section:
 |---|---|---|---|
 | Refused mail retention (days) | `email_audit_retention_days` | Days the identifying details of a refused inbound mail are kept | 90 |
 | Ticket correspondence retention (days) | `email_correspondence_retention_days` | Days the record linking an accepted mail to its ticket or reply is kept | 365 |
-| Deduplication window (seconds) | `email_dedup_window` | Within this window the same Message-ID, or the same sender and subject, is dropped as a duplicate | 300 |
+| Deduplication window (seconds) | `email_dedup_window` | Within this window, a second copy of the email that opened a ticket (same sender, subject and body) is skipped; the ticket gets an internal note and *System Health* counts it under *Duplicate emails*. Replies are never skipped this way | 300 |
 | Merge ordering | `merge_temporal_policy` | Which ticket a merge may close: *Only the older ticket can be merged away* or *Either ticket can be merged away*. <Badge type="warning" text="Enterprise" /> | older |
 
 ### License

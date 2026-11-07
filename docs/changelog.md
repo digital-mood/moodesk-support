@@ -17,6 +17,44 @@ The public changelog starts at **2.34.0**. Earlier releases are not listed here.
 
 <!-- Add new releases directly below this line, newest first, with the same headings. -->
 
+## 3.0.1 — 2026-11-07
+
+### Changed
+
+- **The packages include English only.** Both `local_moodesk` and `local_moodeskpro` are in English,
+  as they have been since 3.0.0. Spanish, French and Portuguese are being prepared. Until they are
+  available, a site in one of those languages shows mooDesk in English.
+
+### Fixed
+
+- **A reply by email without a token reaches its ticket when it answers a notification.** Some mail
+  clients ignore the reply address of a notification and send the reply without its token. Each
+  notification now carries an identifier that mooDesk recognises, so such a reply joins its ticket.
+  It is accepted under the same rules as any reply without a token: the sender has to be someone who
+  may reply on that ticket. If the site's outgoing mail server replaces that identifier, as Exchange
+  Online and Microsoft 365 do, replies behave as they did in 3.0.0. Pro and Enterprise.
+- **A real reply is never discarded as a duplicate.** In 3.0.0, a second reply by email with the same
+  sender and subject as one received a few minutes earlier could be skipped and reach no ticket.
+  mooDesk now skips only a second copy of the email that opened a ticket: the same sender, subject
+  and text. Each skipped copy leaves an internal note on its ticket with the sender, subject and
+  time, and *System Health* counts the skipped copies of the last 30 days under *Duplicate emails*.
+  Pro and Enterprise.
+
+### Upgrade notes {#upgrade-notes-3-0-1}
+
+- **Upgrade both plugins together.** `local_moodeskpro` 3.0.1 needs `local_moodesk` 3.0.1, and
+  Moodle will not upgrade the add-on until the base is on 3.0.1. A site on Starter upgrades
+  `local_moodesk` and needs nothing else.
+- **Replies to notifications sent before 3.0.1 (this revises the 3.0.0 note on replies by email).**
+  Under *Prefer token*, a reply without a token joins its ticket by the identifier only when it
+  answers a notification sent by 3.0.1 or later. A reply to an earlier notification, including those
+  sent by 2.x, still joins its ticket only if it quotes an email mooDesk already stored, such as an
+  earlier reply by email in the same thread. Under *Require token*, every reply without a token is
+  still refused.
+- **Replies skipped by 3.0.0 are not recovered.** A reply 3.0.0 skipped as a duplicate was added to
+  no ticket and stays out of it after the upgrade; *Duplicate emails* in *System Health* counts it if
+  it is less than 30 days old. Ask the sender to send it again if it is needed.
+
 ## 3.0.0 — 2026-11-07
 
 ::: warning Before you upgrade

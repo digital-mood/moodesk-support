@@ -242,7 +242,9 @@ status** before anything mooDesk-specific.
 Upgrading uses the same two options as installing: upload the new ZIP through **Install
 plugins**, or replace the contents of `local/moodesk/` (and `local/moodeskpro/`) on the
 filesystem and open **Site administration → Notifications**. Moodle upgrades the plugins in
-place. Keep both plugins on the same version.
+place. Keep both plugins on the same version: Moodle does not upgrade `local_moodeskpro` until
+`local_moodesk` is on the version it needs (for example, 3.0.1 of the add-on needs 3.0.1 of the
+base), so upgrade them together.
 
 - Read the [changelog](./changelog) for every version between yours and the new one. It names
   every change in behaviour and any step you need to take.

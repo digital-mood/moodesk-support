@@ -33,10 +33,9 @@ supported again since 3.0.0). The detail, including what the CI matrix actually 
 [Installation → System requirements](./installation#system-requirements).
 
 **Which languages does it come in?**
-The packages ship the English language pack. Translations are distributed through Moodle's
-translation system (AMOS) and installed with Moodle's language pack tool. Moodle's usual
-language mechanisms apply: a user sees mooDesk in their Moodle language when a pack is
-installed, and in English otherwise.
+English. Both `local_moodesk` and `local_moodeskpro` include English only, as they have since
+3.0.0. Spanish, French and Portuguese are being prepared. Until they are available, a site in
+one of those languages shows mooDesk in English.
 
 **Where do I download it?**
 Starter, `local_moodesk`, is listed free on the Moodle Marketplace; Pro and Enterprise are the
@@ -202,7 +201,8 @@ operators are alerted; no ticket and no user is created.
 
 **Why did one mail create two tickets?**
 It was delivered twice **outside** the deduplication window (300 seconds by default). Inside
-the window the same Message-ID, or the same sender and subject, is dropped as a duplicate —
+the window, a second copy of the email that opened a ticket (same sender, subject and body) is
+skipped, and that ticket gets an internal note; replies are never skipped this way —
 [Configuration → Operator alerts and retention](./configuration#operator-alerts-and-retention).
 
 ## Automations, webhooks and API
