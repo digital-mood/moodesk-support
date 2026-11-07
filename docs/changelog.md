@@ -17,6 +17,80 @@ The public changelog starts at **2.34.0**. Earlier releases are not listed here.
 
 <!-- Add new releases directly below this line, newest first, with the same headings. -->
 
+## 3.0.0 — 2026-11-07
+
+::: warning Before you upgrade
+mooDesk is now two plugins, and nothing moves to the add-on on its own. Read
+[Upgrading to 3.0.0](./upgrading-to-3-0-0) before upgrading a site that uses Pro or Enterprise,
+the REST API or email ingestion.
+:::
+
+### Added
+
+- **Licence expiry reminders.** 30 and 7 days before a licence expires, site administrators get a
+  notification, by email and popup, saying when it expires. After that date the site runs as
+  Starter and no data is deleted. *License status* shows a banner in the last 30 days.
+- **A notice when a site is over its licensed capacity.** Agents and administrators see it on every
+  mooDesk page until the count is back within the capacity. Requesters never see it.
+- **Attachments dropped from incoming mail are reported.** With attachments off, or over the size
+  or per-message limit, the agent gets an internal note on the ticket with each file's name and size. The requester does not see it, and no
+  file content is kept.
+- **MySQL 8.4 is supported again,** next to MariaDB and PostgreSQL.
+
+### Changed
+
+- **mooDesk is now two plugins.** `local_moodesk` is the Starter edition: tickets, departments,
+  categories, the knowledge base and up to 2 agents, with no licence and no licence calls.
+  `local_moodeskpro` is the add-on that holds Pro and Enterprise, and it needs `local_moodesk`. Both
+  are 3.0.0.
+- **The paid features move to the add-on.** Teams, custom fields, automation rules, satisfaction
+  surveys, reports, dashboard analytics, SLA per department, the agent panel, email ingestion,
+  knowledge base analytics, agent tools, translations and global search are Pro. Agent supervision,
+  ticket merge, webhooks and the REST API are Enterprise.
+- **Their addresses, settings and capabilities change.** Pages are under `/local/moodeskpro/`,
+  settings are under *Site administration → Plugins → Local plugins → mooDesk Pro*, and capabilities
+  are `local/moodeskpro:*`.
+- **The add-on never refuses an agent.** Above the licensed capacity every agent keeps working and
+  the notice stays on. Only a site without the add-on stops at 2 agents.
+- **A feature your licence does not include says so plainly.** The page shows *Not included in this
+  site's licence*, with no upgrade prompt.
+
+### Fixed
+
+- **A reply by email no longer opens a duplicate ticket because of a long thread.** Every message id
+  in `References` and `In-Reply-To` is read now, not only the first.
+- **A reply token is found wherever it sits in the recipients,** so a reply to all keeps its ticket.
+- **More automatic mail is recognised,** so out-of-office replies no longer open tickets.
+- **The privacy declarations are complete.** What outbound webhooks send and what knowledge base
+  events keep are now declared.
+
+### Upgrade notes {#upgrade-notes-3-0-0}
+
+::: warning Nothing moves to the add-on on its own
+Back up the site before upgrading. Tickets, replies, departments, categories and the knowledge
+base stay where they are. What belonged to the paid features is **not** migrated: on the add-on,
+teams, custom fields and their values, SLA per department, automation rules, survey responses,
+knowledge base feedback and analytics, webhooks, API tokens and the related settings start empty,
+and you set up again what you need.
+Without the add-on, a merged ticket is an ordinary closed ticket.
+
+A site that stays on Starter upgrades `local_moodesk` and needs nothing else.
+:::
+
+- **Pro and Enterprise: upgrade `local_moodesk`, install `local_moodeskpro`, and enter the licence
+  key again** in the add-on's settings. Until then the site runs as Starter.
+- **REST API:** issue new tokens on the *API tokens* page and change your calls to the
+  `local_moodeskpro_*` function names. Tokens issued before 3.0.0 stop working.
+- **Email ingestion:** enter the mailbox settings and password in the add-on; polling stays off until
+  then. Start from an empty mail folder, because mail from the last 14 days would be processed again.
+- **Replies by email:** addresses in notifications sent before 3.0.0 are no longer matched to their
+  ticket. A site that had the reply authentication setting lands on *Prefer token*, and a fresh
+  install starts on *Require token*.
+- **Satisfaction surveys:** links in invitations sent before 3.0.0 stop working.
+- **Global search:** the knowledge base search area changes, so the index is rebuilt once.
+- **Moodle's schema check** lists the old tables and columns of the paid features as unexpected. They
+  are left in place and a later release removes them.
+
 ## 2.39.1 — 2026-10-24
 
 ### Fixed
