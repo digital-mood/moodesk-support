@@ -34,8 +34,8 @@ feature belongs to which edition is listed under [Features → Editions at a gla
 | Requirement | Minimum | Notes |
 |---|---|---|
 | Moodle | **4.5 LTS** (`2024100700`) | Moodle 4.1–4.4 are end-of-life and not supported. Verified on 4.5, 5.0, 5.1 and 5.2. Connecting a **Microsoft 365** mailbox for email ingestion (Pro) needs **Moodle 4.5.5, 5.0.1 or later**. mooDesk detects an older version and says so on the settings page. |
-| PHP | **8.1** (declared minimum) | Tested on **PHP 8.2, 8.3 and 8.4**. These minimums are Moodle 4.5's own: Moodle 5.0 needs PHP 8.2, MariaDB 10.11 and PostgreSQL 14, and Moodle 5.2 needs PHP 8.3 and PostgreSQL 16, so your real minimum is the higher of the two. |
-| Database | MariaDB 10.6.7+, MySQL 8.4, PostgreSQL 13+ | Every release is tested on **MariaDB, MySQL and PostgreSQL** (MariaDB 10.11, MySQL 8.4 and PostgreSQL 16). MySQL is supported again since 3.0.0, on 8.4, the version Moodle 5.x requires. |
+| PHP | **8.1** (declared minimum) | Tested on **PHP 8.1, 8.2, 8.3 and 8.4**. These minimums are Moodle 4.5's own: Moodle 5.0 needs PHP 8.2, MariaDB 10.11 and PostgreSQL 14, and Moodle 5.2 needs PHP 8.3 and PostgreSQL 16, so your real minimum is the higher of the two. |
+| Database | MariaDB 10.6.7+, MySQL 8.4, PostgreSQL 13+ | Every release is tested on **MariaDB, MySQL and PostgreSQL**: MariaDB 10.11, MySQL 8.4 and PostgreSQL 16, and the minimums MariaDB 10.6.7 and PostgreSQL 13. MySQL is supported again since 3.0.0, on 8.4, the version Moodle 5.x requires. |
 | PHP extensions | None beyond Moodle's | The PHP `imap` extension is **not** required: email ingestion has its own IMAP client. |
 | Outgoing mail | Configured in Moodle | Ticket notifications, SLA alerts and operator alerts are sent through Moodle's messaging. |
 | Cron | Running | Every background job (SLA checks, auto-close, mail ingestion, webhooks, retention) is a Moodle scheduled task. |
@@ -127,7 +127,7 @@ Installing **`local_moodeskpro`**:
 ## Verifying the installation
 
 1. **Site administration → Plugins → Plugins overview**, section *Local plugins*: **mooDesk**
-   is listed with its version (for this release, `3.0.0`) and the status *Up to date*. With
+   is listed with its version (for this release, `3.0.3`) and the status *Up to date*. With
    the add-on, **mooDesk Pro** is listed too, at the same version.
 2. **Site administration → Plugins → Local plugins** contains a **mooDesk** settings page and
    *Departments*. With the add-on it also contains **mooDesk Pro** and *License status*.
@@ -287,7 +287,7 @@ server is behind an egress firewall.
 **No online licence check and no update check.** Downloading the revocation list is not a
 licence verification: the request carries no licence key, and the key is verified on your
 server against the public key embedded in the add-on. The add-on contains a licence
-verification client and an update check, but in 3.0.0 both are switched off in the code: no
+verification client and an update check, but in 3.0.3 both are switched off in the code: no
 setting turns them on and they make no request.
 
 No other data leaves the site unless an administrator configures an outbound **webhook**
@@ -321,4 +321,4 @@ place with its mooDesk capabilities removed; a later reinstall restores them.
 
 ---
 
-*Verified against mooDesk 3.0.0.*
+*Verified against mooDesk 3.0.3.*

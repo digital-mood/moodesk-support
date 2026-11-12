@@ -157,8 +157,8 @@ For every message the poll reads, in this order:
 
 At the point a ticket or reply would be written, the sender's address must match **one active
 Moodle account**. If it does not, the message is **refused**: no ticket, no placeholder, no
-account created. The refusal is recorded, and the operators in *Unknown-sender alert
-recipients* are notified.
+account created. The refusal is recorded, and the users in *Alert recipients* are notified
+through *mooDesk email ingestion alerts*.
 
 ### How mooDesk reads the mailbox
 
@@ -590,4 +590,4 @@ middleware touches it.
 
 ---
 
-*Verified against mooDesk 3.0.0.*
+*Verified against mooDesk 3.0.3.*

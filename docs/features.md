@@ -145,7 +145,7 @@ article link** into the reply.
 | Create article <Badge type="tip" text="Pro" /> | Start a knowledge base draft pre-filled from this ticket |
 
 **Audit trail.** Every change — creation, status, priority, assignment, category,
-department, team, replies, merges — is recorded with who did it and when. In 3.0.0 the
+department, team, replies, merges — is recorded with who did it and when. In 3.0.3 the
 trail is kept and exported with the user's data, but it is **not shown on the ticket page**.
 
 ### Ticket lifecycle
@@ -282,7 +282,8 @@ webhook that keeps failing, a mailbox poll that errored, a scheduled task that t
 page opens with one verdict — *Everything is working*, *Something needs attention*, *A source
 is down* — and then:
 
-- the **sources** and their state, and the live **incidents** with first seen, last seen and
+- the **sources** and their state (*Webhooks* and *Email ingestion* only with the add-on),
+  and the live **incidents** with first seen, last seen and
   occurrence count. An incident older than the *active window* stays on record but no longer
   counts as a current problem;
 - **Acknowledge** (stops the alerts while you work on it) and **Resolve** (closes it; a
@@ -291,8 +292,8 @@ is down* — and then:
   exceeded* when a site is over;
 - on Pro with email ingestion: the **mailbox connection** (server, encryption, and how the
   mailbox signs in: password, or OAuth 2.0 with its service and whether it is ready), the
-  **inbound sender authentication** evidence and whether the strict policy can be armed, and
-  the **retention** sweeps' last run.
+  **inbound sender authentication** evidence and whether the strict policy can be armed, the
+  **retention** sweeps' last run, and the **duplicate emails** skipped in the last 30 days.
 
 Operator alerts for new incidents go out by Moodle messaging to the configured recipients;
 thresholds and cooldown are under
@@ -386,7 +387,7 @@ mooDesk implements Moodle's privacy API, so a site's existing data-request workf
 What leaves the server, and what does not, is under
 [Installation → Network and privacy](./installation#network-and-privacy).
 
-## Not yet in 3.0.0
+## Not yet in 3.0.3
 
 One feature on this page exists but is incomplete in this release. It is detailed under
 [Configuration → Known limitations](./configuration#known-limitations):
@@ -395,4 +396,4 @@ One feature on this page exists but is incomplete in this release. It is detaile
 
 ---
 
-*Verified against mooDesk 3.0.0.*
+*Verified against mooDesk 3.0.3.*

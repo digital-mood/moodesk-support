@@ -24,7 +24,7 @@ this is how to read it when something is wrong.
 | **Everything is working** | No live incident in the active window (24 hours by default) |
 | **Something needs attention** | At least one live incident of severity *warning* or *error* |
 | **A source is down** | At least one live *critical* incident. Only email ingestion raises critical incidents: the mailbox poll failing as a whole, or an OAuth 2.0 sign-in that cannot happen |
-| A source card reading *N live incident(s)* | Which of the six sources — *Notifications and automation*, *Webhooks*, *Email ingestion*, *Scheduled tasks*, *Knowledge base*, *Interface* — the trouble is in |
+| A source card reading *N live incident(s)* | Which source the trouble is in: *Notifications and automation*, *Scheduled tasks*, *Knowledge base* and *Interface* on every edition, plus *Webhooks* and *Email ingestion* with the add-on |
 | An incident row | One **fingerprint**: the same failure repeating collapses onto one row and bumps *Occurrences* and *Last seen*, rather than piling up rows. The *code* on the row (for example `email_ingestion.imap.poll_failed`) is what the [incident reference](#incident-reference) below is keyed on |
 | **Acknowledge** | You are on it: alerts for this incident stop, the row stays listed. Needs `local/moodesk:managesettings` |
 | **Resolve** | It is fixed: the row leaves the live list. If the same failure happens again the incident **reopens with its history**, so a resolved incident that keeps coming back is a fix that did not take |
@@ -39,7 +39,7 @@ Three things to know about what is *not* on the page:
   *Active incident window* stops counting as a current problem but stays on record until
   *Incident retention* (90 days) removes it.
 - **Alerts are a separate channel.** New incidents at or above *Alert from severity* (*error*
-  by default) are sent by Moodle messaging to the *Unknown-sender alert recipients*, or to the
+  by default) are sent by Moodle messaging to the *Alert recipients*, or to the
   site administrators when that list is empty, no more than once per *Alert cooldown* per
   incident. All four settings are in
   [Configuration → Operator alerts and retention](./configuration#operator-alerts-and-retention).
@@ -93,6 +93,7 @@ cause is documented elsewhere, the link is the fix.
 | Nothing in the *Administration* group of mooDesk's sidebar | The user has no management capability | *Check system permissions* | Entries appear per capability; the Manager archetype holds them by default |
 | After an upgrade, a page is blank or styled wrongly | Cached templates or JavaScript | Reproduce in a private window | *Site administration → Development → Purge all caches* |
 | Moodle refuses to install `local_moodeskpro` | `local_moodesk` is missing or older than the add-on: the add-on requires `local_moodesk` at the same version or later | *Plugins check* names the missing dependency | Install or upgrade `local_moodesk` first — [Installation → Installing](./installation#installing) |
+| After upgrading `local_moodesk` to 3.0.2 or later, System Health has no *Webhooks* or *Email ingestion* card and no alert about refused inbound mail arrives | `local_moodeskpro` is still on an earlier version: until it reaches the base's version, those cards and alerts are off. Refused mail is still refused and failures are still recorded | *Plugins overview* shows *mooDesk Pro* at an earlier version than *mooDesk* | Upgrade the add-on to the same version. Incidents and alert settings are kept and show again — [3.0.2 upgrade notes](./changelog#upgrade-notes-3-0-2) |
 | After upgrading to 3.0.0 the Pro or Enterprise features are gone | The add-on `local_moodeskpro` is not installed, or its licence key was not entered again | *Plugins overview*; *mooDesk → License* | Install the add-on and paste the key under **mooDesk Pro → License** — [Upgrading to 3.0.0](./upgrading-to-3-0-0) |
 | After upgrading to 3.0.0, teams, custom fields, automation rules, webhooks or survey responses are empty | Expected: they are not migrated to the add-on | — | Set them up again — [Upgrading to 3.0.0 → What starts empty](./upgrading-to-3-0-0#what-starts-empty) |
 | A bookmark to a Pro or Enterprise page answers *not found* after upgrading to 3.0.0 | Those pages moved from `/local/moodesk/` to `/local/moodeskpro/` | The address | Use the new address, or open the page from mooDesk's sidebar |
@@ -129,8 +130,9 @@ cause is documented elsewhere, the link is the fix.
 ### Notifications
 
 mooDesk never sends mail itself: every notification goes through **Moodle messaging**, and
-every operator alert too. Three providers carry them — *Ticket notification*, *Email
-ingestion alert*, *Operational alert* — plus the add-on's *mooDesk licence expiry reminders*,
+every operator alert too. *mooDesk ticket notifications* and *mooDesk operational alerts*
+carry them, plus the add-on's *mooDesk email ingestion alerts* and *mooDesk licence expiry
+reminders*,
 described in
 [Configuration → Notifications](./configuration#notifications-1).
 
@@ -142,7 +144,7 @@ described in
 | A specific notification never fires | Its switch is off, or the event does not notify by design — internal notes, priority and status changes notify nobody | [Configuration → Notifications](./configuration#notifications) | Turn the switch on; the four events are the only ones |
 | System Health shows `observer.<event>.failed` | The sending threw — usually a messaging or mail failure — and **nothing retries it**: that notification is lost | The incident's message (redacted) | Fix the underlying failure; the next event sends normally |
 | Operator alerts never arrive although incidents exist | The incident is below *Alert from severity*, is inside the cooldown, or was acknowledged; or the recipients list names an ID that is not a user | [Operator alerts and retention](./configuration#operator-alerts-and-retention) | Lower the threshold to *warning* while diagnosing; verify the user IDs |
-| The CSAT invitation is not received | The ticket never reached the trigger status, or the requester silenced *Ticket notification*; it is sent **once per ticket**, never on a later transition | The requester's own ticket page shows a *How did we do?* card while the invitation is open | [Configuration → CSAT](./configuration#customer-satisfaction-csat) |
+| The CSAT invitation is not received | The ticket never reached the trigger status, or the requester silenced *mooDesk ticket notifications*; it is sent **once per ticket**, never on a later transition | The requester's own ticket page shows a *How did we do?* card while the invitation is open | [Configuration → CSAT](./configuration#customer-satisfaction-csat) |
 | A survey link answers *Invalid or unknown survey link* | The link was sent before 3.0.0, when surveys lived under `/local/moodesk/`; or it is mistyped | The address in the invitation | Expected for invitations sent before 3.0.0; earlier responses are not carried over — [Upgrading to 3.0.0](./upgrading-to-3-0-0#satisfaction-surveys-csat) |
 
 ### Email ingestion and reply by email <Badge type="tip" text="Pro" />
@@ -240,7 +242,7 @@ as they are and record nothing.
 
 ## Incident reference
 
-Every code mooDesk can write to System Health in 3.0.0, by source. *Retried* says whether
+Every code mooDesk can write to System Health in 3.0.3, by source. *Retried* says whether
 mooDesk itself will try the failed operation again; where it says *no*, the fix is on you and
 the operation has to be redone by hand (or will simply happen next time the event occurs).
 
@@ -338,4 +340,4 @@ addresses, hostnames and IDs before attaching them.
 
 ---
 
-*Verified against mooDesk 3.0.0.*
+*Verified against mooDesk 3.0.3.*

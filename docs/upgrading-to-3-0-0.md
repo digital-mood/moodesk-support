@@ -11,10 +11,12 @@ Pro and Enterprise now live in a separate add-on, `local_moodeskpro`, which need
 is listed in the [3.0.0 changelog](./changelog#upgrade-notes-3-0-0), and new installations are
 covered by [Installation](./installation).
 
-::: info Upgrading to 3.0.1
-The same path applies when you upgrade from 2.x straight to 3.0.1. Keep both plugins on the
-same version: `local_moodeskpro` 3.0.1 needs `local_moodesk` 3.0.1. 3.0.1 also changes how
-replies to notifications are threaded; see the [3.0.1 changelog](./changelog#upgrade-notes-3-0-1).
+::: info Upgrading to 3.0.1 or later
+The same path applies when you upgrade from 2.x straight to 3.0.1, 3.0.2 or 3.0.3. Keep both
+plugins on the same version: each release of `local_moodeskpro` needs `local_moodesk` of the
+same release. 3.0.1 also changes how replies to notifications are threaded, and 3.0.2 moves the
+alerts about rejected inbound email to the add-on; see the upgrade notes of
+[3.0.1](./changelog#upgrade-notes-3-0-1) and [3.0.2](./changelog#upgrade-notes-3-0-2).
 :::
 
 ::: warning Nothing moves to the add-on on its own
@@ -186,4 +188,4 @@ delete them, with explicit confirmation. Do not delete them by hand.
 
 ---
 
-*Verified against mooDesk 3.0.1.*
+*Verified against mooDesk 3.0.3.*

@@ -85,7 +85,7 @@ edition: System Health is part of `local_moodesk`.
 
 | Setting | Key | What it does | Default |
 |---|---|---|---|
-| Unknown-sender alert recipients | `email_alert_recipients` | Comma-separated list of Moodle **user IDs** of the people who receive operator alerts (System Health incidents and, with email ingestion, refused senders). Empty = the site administrators | — |
+| Alert recipients | `email_alert_recipients` | Comma-separated list of Moodle **user IDs** of the people who receive operator alerts: System Health incidents and, with the add-on's email ingestion, refused inbound mail. Empty = the site administrators. Called *Unknown-sender alert recipients* before 3.0.2; its value was kept | — |
 | Alert from severity | `incident_alert_severity` | Lowest System Health severity that sends an operator alert: *warning* · *error* · *critical* | error |
 | Alert cooldown (minutes) | `incident_alert_cooldown` | Minimum time between alerts for the same incident | 60 |
 | Active incident window (hours) | `incident_active_window_hours` | How long after its last occurrence an incident still counts as a current problem on System Health. The row stays; only its status changes. | 24 |
@@ -249,7 +249,7 @@ deleted. A licence is an annual activation key with no automatic renewal.
 When a ticket reaches the trigger status, the requester is invited **once per ticket**,
 never again on a later transition:
 
-- **An invitation** goes out through the *Ticket notification* message provider, so the
+- **An invitation** goes out through the *mooDesk ticket notifications* message provider, so the
   requester's own notification preferences apply. It carries the survey link
   (`/local/moodeskpro/csat.php?token=…`; opening it needs no login) and how many days it stays
   valid, with *Custom invitation message* in front of the standard wording when one is
@@ -489,20 +489,20 @@ Outgoing mail configuration** does.
 The four switches are listed under [Settings → Notifications](#notifications). Internal
 notes, priority changes and status changes notify nobody.
 
-Three message providers in `local_moodesk`, and one more in the add-on, each enabled by
+Two message providers in `local_moodesk`, and two more in the add-on, each enabled by
 default for email and popup:
 
 | Provider | Carries |
 |---|---|
-| Ticket notification | The four ticket notifications, and the CSAT invitation (Pro) |
-| Email ingestion alert | Operator alerts from email ingestion — an inbound mail that could not be routed |
-| Operational alert | Operator alerts from System Health — a source that started failing |
+| mooDesk ticket notifications | The four ticket notifications, and the CSAT invitation (Pro) |
+| mooDesk operational alerts | Operator alerts from System Health — a source that started failing. Before 3.0.2 it showed `[[messageprovider:operational_alert]]` instead of a name |
+| mooDesk email ingestion alerts | From `local_moodeskpro`: operator alerts about refused inbound mail (unknown sender, refused reply, unverified sender). Not listed on a site without the add-on |
 | mooDesk licence expiry reminders | From `local_moodeskpro`: the reminders sent to site administrators 30 and 7 days before the licence expires ([License](#license)) |
 
 They are separate so an operator can silence one without the others. Users manage them under
 **Preferences → Notification preferences** (the *mooDesk* rows); a site administrator sets
 the defaults under **Site administration → Messaging → Notification settings**. Operator
-alerts go to the users in *Unknown-sender alert recipients*, or to the site administrators
+alerts go to the users in *Alert recipients*, or to the site administrators
 when that list is empty, at or above *Alert from severity*, no more often than the *Alert
 cooldown* for the same incident.
 
@@ -564,9 +564,9 @@ and an `sla_breached` rule.
 
 ## Known limitations
 
-Configuration that exists in 3.0.0 but does not do what its label suggests:
+Configuration that exists in 3.0.3 but does not do what its label suggests:
 
-| Where | What | Status in 3.0.0 |
+| Where | What | Status in 3.0.3 |
 |---|---|---|
 | Automations | `time_elapsed` trigger | Stored, never evaluated |
 | Scheduled tasks (add-on) | `sync_license` | Registered and enabled; performs no work |
@@ -574,4 +574,4 @@ Configuration that exists in 3.0.0 but does not do what its label suggests:
 
 ---
 
-*Verified against mooDesk 3.0.0.*
+*Verified against mooDesk 3.0.3.*
