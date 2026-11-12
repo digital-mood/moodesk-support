@@ -28,7 +28,7 @@ No. mooDesk is an independent third-party plugin and is not affiliated with or e
 Moodle HQ. Moodle® is a registered trademark of Moodle Pty Ltd.
 
 **Which Moodle versions does it support?**
-Moodle **4.5 LTS** or later, on PHP 8.1 or later, with MariaDB, MySQL 8.4 or PostgreSQL (MySQL is
+Moodle **4.5 LTS to 5.2**, on PHP 8.1 to 8.4, with MariaDB, MySQL 8.4 or PostgreSQL (MySQL is
 supported again since 3.0.0). The detail, including what the CI matrix actually covers, is in
 [Installation → System requirements](./installation#system-requirements).
 
@@ -166,7 +166,7 @@ closed it. Set the value to `0` to stop it — [Configuration → Automation](./
 
 **Is there an audit trail of changes to a ticket?**
 Yes: every change is written to the ticket's history and included in the user's privacy
-export. The history is **not shown on the ticket page** in 3.0.0.
+export. The history is **not shown on the ticket page** in 3.0.3.
 
 **Can tickets be merged?**
 On Enterprise. A duplicate is merged into a target and becomes read-only; the merge can be
@@ -212,7 +212,7 @@ skipped, and that ticket gets an internal note; replies are never skipped this w
 
 **Can a rule fire twice on the same ticket?**
 No. Each rule fires **at most once per ticket**, whatever the trigger, and the outcome is
-logged. A rule with the `time_elapsed` trigger never fires in 3.0.0: it can be saved but is
+logged. A rule with the `time_elapsed` trigger never fires in 3.0.3: it can be saved but is
 not evaluated — [Configuration → Automations](./configuration#automations).
 
 **What fires the `ticket.updated` webhook?**
@@ -254,7 +254,7 @@ SLA check hourly; auto-close at 02:00; with the add-on, the licence tasks at 03:
 
 **When does a requester get the satisfaction survey?**
 When the ticket reaches the trigger status — *Resolved* by default — and CSAT is enabled: an
-invitation goes out through the *Ticket notification* provider, and their own ticket page
+invitation goes out through the *mooDesk ticket notifications* provider, and their own ticket page
 shows a *How did we do?* card while the link is valid. It is sent **once per ticket**; a
 later transition does not send it again. Links in invitations sent before 3.0.0 no longer
 work — [Configuration → CSAT](./configuration#customer-satisfaction-csat).
@@ -330,4 +330,4 @@ issues go through [Support](./support).
 
 ---
 
-*Verified against mooDesk 3.0.0.*
+*Verified against mooDesk 3.0.3.*

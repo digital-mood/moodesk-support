@@ -28,7 +28,7 @@ Moodle HQ. Moodle® is a registered trademark of Moodle Pty Ltd.
 
 | Requirement | Detail |
 |---|---|
-| Moodle | 4.5 LTS or newer. Moodle 4.1–4.4 are end-of-life and not supported. |
+| Moodle | 4.5 LTS to 5.2. Moodle 4.1–4.4 are end-of-life and not supported. |
 | Access | A site administrator account. |
 | Outgoing mail | Configured and working in Moodle — mooDesk sends its notifications through Moodle's messaging. |
 | Cron | Moodle cron running. SLA checks, auto-close, mail ingestion and every other background job depend on it. |
@@ -331,7 +331,7 @@ Open **mooDesk → System health** (`/local/moodesk/health.php`, capability
   *Acknowledge* / *Resolve* pair.
 - **Entitlement** shows `agents / limit` for the effective edition; *Within limit* is what you
   want to see.
-- **Inbound mail retention** shows when the retention sweep last ran and the two policies in
+- **Inbound mail retention**, with the add-on, shows when the retention sweep last ran and the two policies in
   force.
 - **Mailbox connection**, once email ingestion is set up, names the mail server, its
   encryption and how the mailbox signs in.
@@ -357,4 +357,4 @@ A green health page — and the habit of opening it.
 
 ---
 
-*Verified against mooDesk 3.0.0.*
+*Verified against mooDesk 3.0.3.*
