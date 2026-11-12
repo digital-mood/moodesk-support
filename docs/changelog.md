@@ -17,6 +17,70 @@ The public changelog starts at **2.34.0**. Earlier releases are not listed here.
 
 <!-- Add new releases directly below this line, newest first, with the same headings. -->
 
+## 3.0.3 — 2026-11-11
+
+### Changed
+
+- **The packages leave out development files.** The `local_moodesk` download no longer includes
+  `package.json`, `package-lock.json`, `Gruntfile.js` or `DEVELOPER.md`. In both packages,
+  tracker ids, private links and personal names are removed from comments and tests. Nothing
+  changes on the site: no feature, setting, language string or database table changes, and the
+  upgrade runs no data step.
+
+### Upgrade notes {#upgrade-notes-3-0-3}
+
+- **Upgrade both plugins.** `local_moodeskpro` 3.0.3 needs `local_moodesk` 3.0.3, so upgrade the
+  base first, or both at once. A site on Starter upgrades `local_moodesk` and needs nothing else.
+
+## 3.0.2 — 2026-11-11
+
+### Changed
+
+- **System Health shows only what the site has.** A site on Starter no longer shows the *Webhooks*
+  and *Email ingestion* cards, which belong to Pro and Enterprise, and the message shown when
+  nothing has failed no longer lists them. With the add-on, both cards are shown as before.
+  Incidents recorded earlier are kept: if the add-on is removed and installed again, they show
+  again.
+- **The alerts about rejected inbound email belong to the add-on.** On a Pro or Enterprise site
+  they work as before, and the upgrade keeps the administrator's settings for them, including
+  whether they were turned off, and each user's own notification preference. On a site on
+  Starter, *mooDesk email ingestion alerts* no longer appears in the notification settings or in
+  the users' notification preferences: Starter does not turn emails into tickets, so it never sent
+  that alert.
+- **The agent pages name only what the edition has.** On Starter, the agent list, the hint beside
+  an agent with no department and the confirmation for removing an agent mention departments
+  only. On an edition with teams they mention departments and teams, as before.
+- **The setting for alert recipients says what it does.** *Unknown-sender alert recipients* is now
+  *Alert recipients*, the users who are told when an operational incident raises an alert. Leave
+  it empty to notify the site administrators. Its value is kept, and on Pro and Enterprise the
+  alerts about rejected inbound email still go to the same users.
+
+### Fixed
+
+- **The operational alerts have a name in the notification preferences.** The administrator's
+  notification settings and each user's notification preferences showed
+  `[[messageprovider:operational_alert]]` instead of a name. They now show *mooDesk operational
+  alerts*. This affected every edition, Starter included.
+
+### Upgrade notes {#upgrade-notes-3-0-2}
+
+- **Upgrade both plugins.** `local_moodeskpro` 3.0.2 needs `local_moodesk` 3.0.2, so upgrade the
+  base first, or both at once. A site on Starter upgrades `local_moodesk` and needs nothing else.
+- **What is missing while the add-on stays on 3.0.1.** The base 3.0.2 works with the add-on 3.0.1,
+  but until the add-on is upgraded to 3.0.2:
+  - the alerts about rejected inbound email (unknown sender, refused reply, unverified sender) are
+    not sent. The emails are still refused and recorded as before;
+  - *System Health* shows no *Webhooks* or *Email ingestion* card, and failures of webhooks or of
+    email ingestion raise no operational alert. They are recorded, and they show as soon as the
+    add-on is on 3.0.2;
+  - *mooDesk email ingestion alerts* does not appear in the notification settings or
+    preferences;
+  - the agent pages mention departments only, not teams.
+- **Notification settings are kept.** The administrator's settings for the alerts about rejected
+  inbound email, including whether they were turned off, and each user's own preference for them
+  are carried over by the upgrade of the base, whether the add-on is upgraded at the same time or
+  later. They take effect again, unchanged, when the add-on is on 3.0.2.
+
 ## 3.0.1 — 2026-11-07
 
 ### Changed
