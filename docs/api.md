@@ -293,7 +293,7 @@ Moodle answers them with **HTTP 200**. Check the body, not the status code:
 | `ticketnotfound`, `webhook_not_found`, `kb_article_notfound`, `merge_audit_not_found` | mooDesk | Unknown ID |
 | `invalidstatustransition`, `invalidassignee`, `assigneenotindepartment`, `invalidpriority`, `nocategoryavailable`, `ticket_locked_by_merge` | mooDesk | Ticket rules, listed with the function below |
 | `merge_*`, `revert_merge_*` | mooDesk | Merge rules, listed under [Merges](#merges) |
-| `invalidurl`, `webhook_events_required`, `webhook_invalid_event`, `webhook_secret_too_short`, `webhook_secret_too_long` | mooDesk | Webhook validation |
+| `invalidurl`, `webhook_url_not_https`, `webhook_events_required`, `webhook_invalid_event`, `webhook_secret_too_short`, `webhook_secret_too_long` | mooDesk | Webhook validation |
 | `kb_*` | mooDesk | Knowledge base rules, listed under [Knowledge base](#knowledge-base) |
 
 ## Reference
@@ -532,7 +532,7 @@ Error: `webhook_not_found`.
 |---|---|---|---|
 | `id` | int | — | `update_webhook` only |
 | `name` | string | — | Required |
-| `url` | string | — | Required; must be a valid URL. Use HTTPS — see [Integrations](./integrations#webhooks) for what the endpoint must accept |
+| `url` | string | — | Required; must be a valid URL starting with `https://` (since 3.0.4; any other scheme is refused with `webhook_url_not_https`) — see [Integrations](./integrations#webhooks) for what the endpoint must accept |
 | `events` | string[] | — | At least one of the six event types |
 | `secret` | string | `""` | Write-only. At least 32 characters (at most 255) when supplied |
 | `active` | int | 1 | `1` active, `0` paused |
@@ -735,7 +735,7 @@ parameters and return values are not a public contract.
 
 ## Not in the API
 
-What an integration might look for and will not find in 3.0.3. None of these has a
+What an integration might look for and will not find in 3.0.4. None of these has a
 workaround inside the API.
 
 | Wanted | Status |
@@ -756,4 +756,4 @@ workaround inside the API.
 
 ---
 
-*Verified against mooDesk 3.0.3.*
+*Verified against mooDesk 3.0.4.*

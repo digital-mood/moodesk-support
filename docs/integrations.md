@@ -153,7 +153,10 @@ For every message the poll reads, in this order:
 10. **New ticket.** The sender becomes the requester, the subject the subject and the text
     body the message. Attachments go on the opening message, the source is *Email*, and the
     configured department and category apply. All of this happens after the sender-authenticity
-    policy has had its say.
+    policy has had its say. While no sender authentication profile is usable, no ticket is
+    created here at all, including the new ticket a reply to a closed ticket would open: the
+    message is refused as `sender_no_auth_profile`
+    ([Sender authentication](#sender-authentication)).
 
 At the point a ticket or reply would be written, the sender's address must match **one active
 Moodle account**. If it does not, the message is **refused**: no ticket, no placeholder, no
@@ -210,6 +213,7 @@ short. Refusals also appear as operator alerts, and failures as incidents on
 | `already_processed` | Its Message-ID is already on record (an earlier run, or the re-scan) |
 | `rescan_skipped_no_message_id` | Re-scan only: already in the folder and has no Message-ID, so it was left alone |
 | `unknown_sender_rejected` | The sender is not an active Moodle user. Operators alerted |
+| `sender_no_auth_profile` | A new ticket, refused because no sender authentication profile is usable, whatever the policy says (since 3.0.4). Kept in the refused-mail audit; one *Email ingestion* incident counts them, no alert per message |
 | `sender_unverified_rejected` | Sender authenticity is *Require* and the verdict was not a pass. Operators alerted |
 | `token_required` | Reply authentication is *Require token* and the reply carried none |
 | `token_invalid` | A token that does not verify. Refused in every mode |
@@ -379,6 +383,19 @@ when a mail **opens a new ticket** (replies are covered by the token above). It 
 on every message and recorded, and the verdict is shown to agents on the ticket; it is
 **enforced** only when a new ticket is created.
 
+::: danger No profile, no tickets from email
+Since 3.0.4, while no profile is usable — *None* (the default), no trusted authentication
+server identifier, or *Other mail server* without the assertion — **every new ticket by email
+is refused**, whatever [Sender authenticity for new tickets](#turning-on-require) says, *Warn*
+and *Off* included. Without a profile nothing tells a genuine `From:` from a forged one, so the
+ticket would be opened in the name of whichever user the address names. Each refused message
+is kept in the refused-mail audit with the reason `sender_no_auth_profile` and is not turned
+into a ticket later; System Health shows one *Email ingestion* incident
+(`email_ingestion.ticket.no_auth_profile`) that counts them, and no alert is sent per message.
+Replies to open tickets are not affected. The settings page says this next to the *Email
+ingestion* toggle. Configure a profile before you expect tickets by email.
+:::
+
 ### Provider profiles
 
 The whole difficulty is telling the header your provider wrote from one a sender forged, so
@@ -388,13 +405,13 @@ sender wrote.
 
 | Profile | Use when | What you must provide |
 |---|---|---|
-| **None** | You do not want sender verdicts read | — |
+| **None** | Shown as *None — no new tickets from email*. No verdict is read, and no ticket is opened from email | — |
 | **Gmail / Google Workspace** | The polled mailbox is on Google | The **authentication server identifier** Google writes — usually `mx.google.com`, but read it off a raw message from *your own* mailbox rather than assuming |
 | **Other mail server** | Any other provider | The identifier, **and** the assertion that your server strips incoming headers impersonating it. mooDesk cannot verify that assertion: if it is wrong, a forged verdict is read as genuine. Without the assertion this profile produces no verdict at all |
 
 There is no Microsoft 365 profile: Exchange Online's header format has not been validated by
 mooDesk against a real tenant. A Microsoft 365 site uses *Other mail server* with the
-assertion, or stays on *None*.
+assertion; on *None* it opens no ticket from email.
 
 What counts as a **pass**: DMARC pass for the `From:` domain, or an aligned DKIM pass, or an
 aligned SPF pass. SPF alone never suffices — it authenticates the envelope, not the `From:`.
@@ -404,9 +421,12 @@ header), or *unverifiable* (a header mooDesk cannot attribute to your provider).
 ### Turning on Require
 
 [Sender authenticity for new tickets](./configuration#inbound-sender-authentication) has three
-modes. **Warn** (the default) records the verdict, shows it on the ticket and creates the
-ticket regardless. **Require** creates a ticket only for an authenticated sender and refuses
-everything else — including mail the site cannot judge. **Off** stops evaluating.
+modes, which apply once a profile is usable. **Warn** (the default) records the verdict, shows
+it on the ticket and creates the ticket regardless. **Require** creates a ticket only for an
+authenticated sender and refuses everything else — including mail the site cannot judge.
+**Off** stops evaluating. With *Warn* or *Off*, a forged `From:` address can open a ticket in
+another user's name, and the settings page warns about it; only *Require* refuses a sender the
+receiving mail server did not authenticate.
 
 *Require* becomes selectable only after real mail has shown the profile works: in the last
 **7 days**, at least **20** messages evaluated, at least **10** authenticated, and at least
@@ -424,7 +444,10 @@ ticket. Deliveries are queued, retried, signed and logged.
 
 **mooDesk → Webhooks** (`/local/moodeskpro/webhooks.php`, capability
 `local/moodeskpro:managewebhooks`). *Add webhook* asks for a **name**, the **URL**, a
-**signing secret**, **Active**, and the **events** to subscribe to (at least one). Once saved,
+**signing secret**, **Active**, and the **events** to subscribe to (at least one). The URL
+**must start with `https://`**: the form, and the API functions `local_moodeskpro_create_webhook`
+and `local_moodeskpro_update_webhook`, refuse any other scheme (*The endpoint URL must use
+HTTPS.*). Once saved,
 **Send test ping** posts a `test.ping` payload to the URL right away and shows the HTTP status
 it got back. The recent deliveries of each webhook are listed with event, time, HTTP status and
 outcome.
@@ -441,6 +464,15 @@ The list marks a webhook as *Signed*, as *Unsigned* (no secret: deliveries carry
 or as *Weak secret* (shorter than 32 characters). Rotate the secret of an *Unsigned* or *Weak
 secret* webhook to replace it with a generated one.
 
+::: warning A webhook saved with an `http://` URL is not delivered
+Since 3.0.4, a webhook saved earlier with an `http://` URL stays on the list, but nothing is
+sent to it: each queued delivery fails at once, without retries, and records a
+`webhook.delivery.abandoned` incident on [System Health](./features#system-health), and
+**Send test ping** returns an error (*Test ping failed: The endpoint URL must use HTTPS.*)
+without sending. Change its URL to `https://` to resume;
+deliveries that failed before the change are not replayed.
+:::
+
 ::: info Upgrading from 2.x
 Webhooks are not carried over to the add-on: create each subscription again on 3.0.0 and give
 its receiver the new secret. See [Upgrading to 3.0.0](./upgrading-to-3-0-0#webhooks).
@@ -450,7 +482,7 @@ its receiver the new secret. See [Upgrading to 3.0.0](./upgrading-to-3-0-0#webho
 |---|---|
 | **mooDesk** | Builds, signs, queues, delivers and logs each request. |
 | **Moodle** | Webhook requests go out through Moodle's HTTP client and are subject to the **network restrictions configured in Moodle** (*Site administration → Security → HTTP security*): a host or port blocked there never receives a delivery, and the failure shows in the log and on System Health. Cron must run: deliveries are drained by a scheduled task. |
-| **Your endpoint** | Accepts `POST`, answers **2xx** within 5 seconds, presents a **valid TLS certificate** — mooDesk verifies it and there is no setting to skip that. Use **HTTPS** in production. Redirects are not followed. |
+| **Your endpoint** | Accepts `POST`, answers **2xx** within 5 seconds, is served over **HTTPS** (required since 3.0.4) and presents a **valid TLS certificate** — mooDesk verifies it and there is no setting to skip that. Redirects are not followed. |
 
 ### Events and payload
 
@@ -558,6 +590,7 @@ middleware touches it.
   30 and 120 minutes between them. After the fifth failure the row is marked failed and an
   incident appears on [System Health](./features#system-health).
 - A webhook that is disabled or deleted while deliveries are pending fails them permanently.
+  So does one whose URL is not `https://`: its deliveries fail at once, without retries.
 - Every attempt, including test pings, is logged with the payload sent, the HTTP status and
   the first 4 KB of the response. Log rows are kept for the
   [retention period](./configuration#webhooks) you set.
@@ -587,7 +620,8 @@ middleware touches it.
 | Automatic account creation for unknown senders | By design: mail from an address with no active Moodle account is refused |
 | A webhook on assignment | No `ticket.assigned` event; see [Events](#events-and-payload) |
 | Following redirects, or skipping TLS verification, on webhook deliveries | Not available |
+| A webhook URL with `http://` or any scheme other than `https://` | Refused since 3.0.4 |
 
 ---
 
-*Verified against mooDesk 3.0.3.*
+*Verified against mooDesk 3.0.4.*
