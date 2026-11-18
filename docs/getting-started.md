@@ -254,9 +254,17 @@ mail opens a ticket, and a reply to a mooDesk notification lands on its ticket.
    section **Email Ingestion**: enable it, then enter host, port,
    connection security, user and folder, and choose how the mailbox signs in: its password, or
    OAuth 2.0 for Gmail / Google Workspace and Microsoft 365.
-3. Leave the **Email reply authentication** and **Inbound sender authentication** sections at their
-   defaults for now. [Integrations](./integrations) explains when and how to tighten them;
-   System Health shows whether your mail provider gives mooDesk enough information to do so.
+3. In **Inbound sender authentication**, choose a **Provider profile** before you expect any
+   ticket by email: *Gmail / Google Workspace* with the authentication server identifier your
+   provider writes, or *Other mail server* with the identifier and the assertion that your
+   server strips forged authentication headers. With the default profile, *None*, **no ticket
+   is created from email**: every new message is refused, kept in the refused-mail audit and
+   not turned into a ticket later, and System Health shows an *Email ingestion* incident.
+   Replies to open tickets are not affected. Leave **Email reply authentication** and *Sender
+   authenticity for new tickets* at their defaults for now.
+   [Integrations → Sender authentication](./integrations#sender-authentication) explains the
+   profiles and when to tighten the policy; System Health shows whether your mail provider
+   gives mooDesk enough information to do so.
 4. Run the `process_incoming_email` task once from **Site administration → Server → Tasks →
    Scheduled tasks**, and send a test mail to the mailbox.
 
@@ -357,4 +365,4 @@ A green health page — and the habit of opening it.
 
 ---
 
-*Verified against mooDesk 3.0.3.*
+*Verified against mooDesk 3.0.4.*

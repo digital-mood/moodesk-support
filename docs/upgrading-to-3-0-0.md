@@ -12,11 +12,14 @@ is listed in the [3.0.0 changelog](./changelog#upgrade-notes-3-0-0), and new ins
 covered by [Installation](./installation).
 
 ::: info Upgrading to 3.0.1 or later
-The same path applies when you upgrade from 2.x straight to 3.0.1, 3.0.2 or 3.0.3. Keep both
-plugins on the same version: each release of `local_moodeskpro` needs `local_moodesk` of the
-same release. 3.0.1 also changes how replies to notifications are threaded, and 3.0.2 moves the
-alerts about rejected inbound email to the add-on; see the upgrade notes of
-[3.0.1](./changelog#upgrade-notes-3-0-1) and [3.0.2](./changelog#upgrade-notes-3-0-2).
+The same path applies when you upgrade from 2.x straight to 3.0.1, 3.0.2, 3.0.3 or 3.0.4.
+Upgrade both plugins to the latest release. Up to 3.0.3, each release of `local_moodeskpro`
+needs `local_moodesk` of the same release; `local_moodeskpro` 3.0.4 needs `local_moodesk` 3.0.3
+or later. 3.0.1 also changes how replies to notifications are threaded, 3.0.2 moves the alerts
+about rejected inbound email to the add-on, and 3.0.4 opens no ticket from email until a sender
+authentication profile is configured and delivers webhooks only to `https://` URLs; see the
+upgrade notes of [3.0.1](./changelog#upgrade-notes-3-0-1),
+[3.0.2](./changelog#upgrade-notes-3-0-2) and [3.0.4](./changelog#upgrade-notes-3-0-4).
 :::
 
 ::: warning Nothing moves to the add-on on its own
@@ -131,7 +134,8 @@ The full reference is on the [API](./api) page.
 
 Webhooks are configured again on the add-on's *Webhooks* page: subscriptions, secrets and the
 delivery log start empty. Create each subscription again and give its receiver the signing
-secret of the new subscription. See [Integrations](./integrations#webhooks).
+secret of the new subscription. From 3.0.4 the URL must start with `https://`. See
+[Integrations](./integrations#webhooks).
 
 ### Email ingestion and replies by email
 
@@ -139,6 +143,11 @@ secret of the new subscription. See [Integrations](./integrations#webhooks).
   Ingestion**). Polling stays off until then.
 - **Start from an empty mail folder.** The add-on has no record of the mail that 2.x already
   handled, so on its first poll it would process the last 14 days of mail again.
+- **Configure a sender authentication profile** (from 3.0.4) under **mooDesk Pro → Inbound
+  sender authentication**: *Gmail / Google Workspace*, or *Other mail server* with the
+  assertion. Until a profile is usable, every new ticket by email is refused and not turned
+  into a ticket later; replies to open tickets still arrive. See
+  [Integrations → Sender authentication](./integrations#sender-authentication).
 - **Reply authentication.** A site that had the reply authentication setting lands on *Prefer
   token*, so that the upgrade refuses nothing. Choose *Require token* again once you have
   checked your replies. A fresh install starts on *Require token*. See
@@ -174,8 +183,9 @@ delete them, with explicit confirmation. Do not delete them by hand.
 
 ## After the upgrade
 
-1. **Plugins overview** shows **mooDesk** and, on Pro and Enterprise, **mooDesk Pro**, both at
-   the same version (`3.0.0` or later) and *Up to date*.
+1. **Plugins overview** shows **mooDesk** and, on Pro and Enterprise, **mooDesk Pro**, both
+   *Up to date*, at `3.0.0` or later. Up to 3.0.3 both show the same version; with
+   `local_moodeskpro` 3.0.4, `local_moodesk` may be at 3.0.3 or 3.0.4.
 2. **mooDesk → System health** reads *Everything is working*. An upgrade that left something
    broken shows up here first.
 3. **mooDesk → License** (Pro and Enterprise) shows your edition and the *Agents* row with your
@@ -188,4 +198,4 @@ delete them, with explicit confirmation. Do not delete them by hand.
 
 ---
 
-*Verified against mooDesk 3.0.3.*
+*Verified against mooDesk 3.0.4.*

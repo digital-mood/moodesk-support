@@ -145,7 +145,7 @@ article link** into the reply.
 | Create article <Badge type="tip" text="Pro" /> | Start a knowledge base draft pre-filled from this ticket |
 
 **Audit trail.** Every change — creation, status, priority, assignment, category,
-department, team, replies, merges — is recorded with who did it and when. In 3.0.3 the
+department, team, replies, merges — is recorded with who did it and when. In 3.0.4 the
 trail is kept and exported with the user's data, but it is **not shown on the ticket page**.
 
 ### Ticket lifecycle
@@ -197,6 +197,10 @@ different custom field values — and confirm. The merge page is
 - Nothing is copied: the duplicate's replies, notes and attachments stay where they are and
   are **read through the link** on the target, labelled *From ticket #N*. The duplicate is
   closed.
+- The people affected are notified: the duplicate's requester, the target's requester and the
+  target's assignee, once each, never the agent who merged. Since 3.0.4 these notifications go
+  out from a background task, *Notify the people affected by a ticket merge*, on the next cron
+  run rather than during the merge; who is told and what they receive do not change.
 - A merged ticket is not "resolved": no CSAT survey is created for it and automation rules
   skip it. On a site without the add-on, a merged ticket is shown as an ordinary closed
   ticket.
@@ -387,7 +391,7 @@ mooDesk implements Moodle's privacy API, so a site's existing data-request workf
 What leaves the server, and what does not, is under
 [Installation → Network and privacy](./installation#network-and-privacy).
 
-## Not yet in 3.0.3
+## Not yet in 3.0.4
 
 One feature on this page exists but is incomplete in this release. It is detailed under
 [Configuration → Known limitations](./configuration#known-limitations):
@@ -396,4 +400,4 @@ One feature on this page exists but is incomplete in this release. It is detaile
 
 ---
 
-*Verified against mooDesk 3.0.3.*
+*Verified against mooDesk 3.0.4.*

@@ -160,6 +160,7 @@ off, OAuth 2.0 on Google and Microsoft 365) are under [Provider notes](./integra
 | No mail becomes a ticket, System Health reads **A source is down** with an `email_ingestion.oauth2.*` incident | The mailbox is set to OAuth 2.0 and cannot sign in | The incident code, below | Follow the remedy for that code in the [incident reference](#email-ingestion-email-ingestion) |
 | No mail becomes a ticket since upgrading to 3.0.0 | The mailbox settings and password were not entered again in the add-on, so polling is off | **mooDesk Pro → Email Ingestion** is empty or disabled | Enter them again — [Upgrading to 3.0.0](./upgrading-to-3-0-0#email-ingestion-and-replies-by-email) |
 | Old mail became tickets again right after upgrading to 3.0.0 | The add-on has no record of the mail 2.x handled, so its first poll processed the last 14 days again | Task log of the first run: `ticket_created` for old messages | Close the duplicates. Before the upgrade, start from an empty folder — [Upgrading to 3.0.0](./upgrading-to-3-0-0#email-ingestion-and-replies-by-email) |
+| No new mail becomes a ticket since upgrading to 3.0.4, replies to open tickets still arrive | No sender authentication profile is usable: the profile is *None*, no trusted authentication server identifier is set, or *Other mail server* is chosen without the assertion. From 3.0.4 every new ticket by mail is then refused, in every mode of *Sender authenticity for new tickets* | Task log outcome `sender_no_auth_profile`; incident `email_ingestion.ticket.no_auth_profile` on System Health; a warning next to the ingestion toggle on the settings page | Configure a profile under *Inbound sender authentication* — [Integrations → Sender authentication](./integrations#sender-authentication). Messages refused before that stay in the refused-mail audit and are not turned into tickets later: ask their senders to write again |
 | No mail becomes a ticket, System Health is green | The task is disabled, cron is not running, or no new mail has arrived in the polled folder. Mail that was moved out of the folder or deleted before a poll is not seen | Task log of `process_incoming_email`: no runs, or `0` outcomes | [First checks](#first-checks); check the folder name, and that no rule or other client moves mail out of it |
 | The settings page warns that the mailbox is polled without encryption | *Connection security* is *None* | System Health, *Mailbox connection*: *Not encrypted* | Choose *SSL/TLS* or *STARTTLS*, with the port your provider gives for it (usually 993 or 143) |
 | Old mail in the folder never became tickets | The first poll of a folder reads only the last 14 days, and leaves alone a message that was already there without a Message-ID (`rescan_skipped_no_message_id`) | Task log of the first run | Expected. Forward any message you still need to the mailbox, so it arrives as new mail. See [How mooDesk reads the mailbox](./integrations#how-moodesk-reads-the-mailbox) |
@@ -188,6 +189,7 @@ client**, with 5 attempts and the timeouts described in
 | Every attempt fails with a transport error | The host or port is blocked by **Moodle's HTTP security** settings, DNS does not resolve from the server, or the certificate is not valid — mooDesk verifies TLS and follows no redirects | Delivery log: the error text of the attempt | *Site administration → Security → HTTP security* (blocked hosts, allowed ports); use a valid certificate; give the final URL |
 | Attempts time out | The endpoint answers in more than 5 seconds | Delivery log | Acknowledge fast, process later |
 | Deliveries stop after five failures and an incident appears | Expected: the row is abandoned after the fifth attempt | Incident `webhook.delivery.abandoned`, one per webhook | Fix the endpoint, then *Resolve*. Abandoned deliveries are **not** replayed |
+| A webhook stops receiving anything after upgrading to 3.0.4, and *Send test ping* returns an error | Its URL starts with `http://`. From 3.0.4 webhook endpoints must use HTTPS: each queued delivery fails at once, without retries, and *Send test ping* sends nothing | Incident `webhook.delivery.abandoned` with the message `endpoint URL is not https; delivery refused`; the webhook's URL on its edit page | Change the URL to `https://` on the webhook's edit page; deliveries resume from the next event. Deliveries that failed before the change are **not** replayed |
 | Deliveries fail permanently right after editing the webhook | The webhook was disabled or deleted while rows were pending — they fail permanently | Delivery log | Expected; re-enable before the queue drains next time |
 | The receiver rejects the signature | The secret was rotated in mooDesk and the receiving end still has the old one, or the receiver computes the signature over a re-serialised body | [Integrations → Verifying the signature](./integrations#verifying-the-signature) | Rotate the secret again and configure the new one on the receiving end straight away; it is shown once |
 | Deliveries arrive without an `X-Signature-256` header | The webhook has no secret: the list marks it *Unsigned* | The webhook list | Use **Rotate secret** on its edit page, and configure the new secret on the receiving end |
@@ -242,7 +244,7 @@ as they are and record nothing.
 
 ## Incident reference
 
-Every code mooDesk can write to System Health in 3.0.3, by source. *Retried* says whether
+Every code mooDesk can write to System Health in 3.0.4, by source. *Retried* says whether
 mooDesk itself will try the failed operation again; where it says *no*, the fix is on you and
 the operation has to be redone by hand (or will simply happen next time the event occurs).
 
@@ -273,7 +275,8 @@ All *error*, none retried. `<event>` is one of `ticket_created`, `ticket_replied
 | `email_ingestion.message.oversized` | error | One message is larger than *Maximum message size* and was not downloaded. Its headers are recorded and it was marked as processed. **Do:** ask the sender to send it again within the limit | No |
 | `email_ingestion.cursor.retry_abandoned` | error | The retry list was full (20 messages), so its oldest message was given up | No |
 | `email_ingestion.cursor.uidvalidity_changed` | warning | The server renumbered the folder (for example after a restore), so it is being re-scanned once, 14 days back | — |
-| `email_ingestion.ticket.sender_auth_unreadable` | error | *Require* is on and no usable provider profile, or a verdict the profile cannot read: new tickets by mail are being refused | Each message |
+| `email_ingestion.ticket.no_auth_profile` | error | No sender authentication profile is usable (since 3.0.4), so every new ticket by mail is being refused, whatever *Sender authenticity for new tickets* says. One incident counts the refused messages; no alert is sent per message. **Do:** configure a profile under *Inbound sender authentication* | No |
+| `email_ingestion.ticket.sender_auth_unreadable` | error | *Require* is on and the profile cannot read a verdict on the message: new tickets by mail are being refused | Each message |
 | `email_ingestion.ticket.sender_unverified` | warning | One new-ticket mail was refused because the receiving server did not authenticate its sender | No |
 | `email_ingestion.reply.token_required` | warning | A reply carried no conversation token and the site requires one | No |
 | `email_ingestion.reply.token_invalid` | warning | A reply's token did not verify | No |
@@ -340,4 +343,4 @@ addresses, hostnames and IDs before attaching them.
 
 ---
 
-*Verified against mooDesk 3.0.3.*
+*Verified against mooDesk 3.0.4.*

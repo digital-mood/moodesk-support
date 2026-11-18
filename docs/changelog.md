@@ -17,6 +17,51 @@ The public changelog starts at **2.34.0**. Earlier releases are not listed here.
 
 <!-- Add new releases directly below this line, newest first, with the same headings. -->
 
+## 3.0.4 — 2026-11-18
+
+### Changed
+
+- **A site that ingests email without a sender authentication profile stops creating tickets by
+  email.** Until now, with the default profile *None*, an inbound email opened a ticket in the name
+  of whichever user its `From:` address named, and nothing checked that address. From 3.0.4, while
+  no sender authentication profile is usable, every new ticket by email is refused, whatever
+  *Sender authenticity for new tickets* says. Each refused message is kept in the refused-mail
+  audit with the reason `sender_no_auth_profile`, and *System Health* shows one *Email ingestion*
+  error that counts them; no alert is sent per message. Once a profile is usable, the policy
+  applies as before, and *Warn* is still the default. Replies to open tickets are not affected.
+  See [Integrations → Sender authentication](./integrations#sender-authentication). Pro and
+  Enterprise.
+- **Webhooks with an `http://` URL are no longer delivered.** Webhook endpoints must use HTTPS.
+  The webhook form and the web service functions `local_moodeskpro_create_webhook` and
+  `local_moodeskpro_update_webhook` refuse any other URL. A webhook saved earlier with an
+  `http://` URL stays on the list, but each of its deliveries fails at once, without retries, and
+  records an incident; *Send test ping* returns an error and sends nothing. Enterprise.
+- **Merge notifications go out on the next cron run.** They are now sent by a background task,
+  *Notify the people affected by a ticket merge*, instead of during the merge itself. Who is told
+  and what they receive do not change. Enterprise.
+
+### Fixed
+
+- **Cache definitions without a name.** The cache administration page showed a placeholder
+  instead of the name of five mooDesk caches: *Dashboard metrics* (all editions), and *API rate
+  limit*, *Knowledge base analytics*, *Licence state* and *Revocation list* (Pro and Enterprise).
+- **The CSAT survey page no longer loads the stylesheets twice.** Its look does not change. Pro
+  and Enterprise.
+
+### Upgrade notes {#upgrade-notes-3-0-4}
+
+- **Before upgrading a site that ingests email, configure a sender authentication profile**
+  under *Inbound sender authentication* (Gmail / Google Workspace, or *Other mail server* with
+  the assertion). Without it, the site stops creating tickets by email as soon as
+  `local_moodeskpro` 3.0.4 is installed. Messages refused in the meantime stay in the
+  refused-mail audit; they are not turned into tickets after the profile is configured, so ask
+  their senders to write again if needed.
+- **Change every webhook URL that starts with `http://` to `https://`** before or right after
+  the upgrade. Deliveries that fail before the change are not retried.
+- **`local_moodeskpro` 3.0.4 works with `local_moodesk` 3.0.3 or 3.0.4.** Upgrading both is
+  recommended. A site on Starter upgrades `local_moodesk`: the only change is the name of the
+  *Dashboard metrics* cache, with no screen, setting or database change.
+
 ## 3.0.3 — 2026-11-11
 
 ### Changed

@@ -166,7 +166,7 @@ closed it. Set the value to `0` to stop it — [Configuration → Automation](./
 
 **Is there an audit trail of changes to a ticket?**
 Yes: every change is written to the ticket's history and included in the user's privacy
-export. The history is **not shown on the ticket page** in 3.0.3.
+export. The history is **not shown on the ticket page** in 3.0.4.
 
 **Can tickets be merged?**
 On Enterprise. A duplicate is merged into a target and becomes read-only; the merge can be
@@ -212,7 +212,7 @@ skipped, and that ticket gets an internal note; replies are never skipped this w
 
 **Can a rule fire twice on the same ticket?**
 No. Each rule fires **at most once per ticket**, whatever the trigger, and the outcome is
-logged. A rule with the `time_elapsed` trigger never fires in 3.0.3: it can be saved but is
+logged. A rule with the `time_elapsed` trigger never fires in 3.0.4: it can be saved but is
 not evaluated — [Configuration → Automations](./configuration#automations).
 
 **What fires the `ticket.updated` webhook?**
@@ -330,4 +330,4 @@ issues go through [Support](./support).
 
 ---
 
-*Verified against mooDesk 3.0.3.*
+*Verified against mooDesk 3.0.4.*

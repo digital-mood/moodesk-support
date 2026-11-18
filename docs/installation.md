@@ -127,8 +127,9 @@ Installing **`local_moodeskpro`**:
 ## Verifying the installation
 
 1. **Site administration → Plugins → Plugins overview**, section *Local plugins*: **mooDesk**
-   is listed with its version (for this release, `3.0.3`) and the status *Up to date*. With
-   the add-on, **mooDesk Pro** is listed too, at the same version.
+   is listed with its version (for this release, `3.0.4`) and the status *Up to date*. With
+   the add-on, **mooDesk Pro** is listed too, at `3.0.4`; it also works with **mooDesk**
+   `3.0.3`.
 2. **Site administration → Plugins → Local plugins** contains a **mooDesk** settings page and
    *Departments*. With the add-on it also contains **mooDesk Pro** and *License status*.
 3. Open `/local/moodesk/index.php` (**mooDesk → Tickets**). The ticket queue loads inside
@@ -287,7 +288,7 @@ server is behind an egress firewall.
 **No online licence check and no update check.** Downloading the revocation list is not a
 licence verification: the request carries no licence key, and the key is verified on your
 server against the public key embedded in the add-on. The add-on contains a licence
-verification client and an update check, but in 3.0.3 both are switched off in the code: no
+verification client and an update check, but in 3.0.4 both are switched off in the code: no
 setting turns them on and they make no request.
 
 No other data leaves the site unless an administrator configures an outbound **webhook**
@@ -321,4 +322,4 @@ place with its mooDesk capabilities removed; a later reinstall restores them.
 
 ---
 
-*Verified against mooDesk 3.0.3.*
+*Verified against mooDesk 3.0.4.*

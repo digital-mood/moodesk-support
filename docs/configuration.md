@@ -178,10 +178,27 @@ from one written by the sender.
 
 | Setting | Key | What it does | Default |
 |---|---|---|---|
-| Provider profile | `email_auth_profile` | *None* · *Gmail / Google Workspace* · *Other mail server* | *None* |
+| Provider profile | `email_auth_profile` | *None — no new tickets from email* · *Gmail / Google Workspace* · *Other mail server* | *None* |
 | Trusted authentication server identifiers | `email_auth_authserv` | The identifier your provider writes in its authentication header (for Google Workspace, usually `mx.google.com` — copy it from a real message, do not assume it) | — |
 | My mail server strips forged authentication headers | `email_auth_gateway_asserted` | *Other mail server* only. mooDesk cannot verify this assertion; if it is false, a forged verdict is read as genuine. | off |
-| Sender authenticity for new tickets | `email_verify_new_tickets` | *Off* · *Warn* · *Require* | *Warn* |
+| Sender authenticity for new tickets | `email_verify_new_tickets` | *Off* · *Warn* · *Require*. Applies only once a profile is usable | *Warn* |
+
+::: warning No ticket is created from email until a profile is usable
+A profile is usable when it is *Gmail / Google Workspace* with at least one trusted
+authentication server identifier, or *Other mail server* with the identifier **and** the
+assertion. Until then — the default *None*, no identifier, or *Other mail server* without the
+assertion — **every new ticket by email is refused**, in every mode of *Sender authenticity for
+new tickets*, *Warn* and *Off* included. Each refused message is kept in the refused-mail audit
+with the reason `sender_no_auth_profile` and is not turned into a ticket later; System Health
+shows one *Email ingestion* incident that counts them, and no alert is sent per message.
+Replies to open tickets are not affected. The settings page says this next to the *Email
+ingestion* toggle. Since 3.0.4.
+:::
+
+With a usable profile, the policy applies: *Warn* (the default) and *Off* still open a ticket
+for a sender the receiving mail server did not authenticate, so a forged `From:` address can
+open a ticket in another user's name. The settings page warns about this while the policy is
+*Warn* or *Off*. Only *Require* refuses such a sender.
 
 *Require* unlocks only after real traffic has proven the profile: in the last 7 days at least
 20 evaluated messages, at least 10 authenticated, and at least 80 % with a verdict the profile
@@ -564,9 +581,9 @@ and an `sla_breached` rule.
 
 ## Known limitations
 
-Configuration that exists in 3.0.3 but does not do what its label suggests:
+Configuration that exists in 3.0.4 but does not do what its label suggests:
 
-| Where | What | Status in 3.0.3 |
+| Where | What | Status in 3.0.4 |
 |---|---|---|
 | Automations | `time_elapsed` trigger | Stored, never evaluated |
 | Scheduled tasks (add-on) | `sync_license` | Registered and enabled; performs no work |
@@ -574,4 +591,4 @@ Configuration that exists in 3.0.3 but does not do what its label suggests:
 
 ---
 
-*Verified against mooDesk 3.0.3.*
+*Verified against mooDesk 3.0.4.*
