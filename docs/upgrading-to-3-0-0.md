@@ -12,10 +12,10 @@ is listed in the [3.0.0 changelog](./changelog#upgrade-notes-3-0-0), and new ins
 covered by [Installation](./installation).
 
 ::: info Upgrading to 3.0.1 or later
-The same path applies when you upgrade from 2.x straight to 3.0.1, 3.0.2, 3.0.3 or 3.0.4.
+The same path applies when you upgrade from 2.x straight to 3.0.1, 3.0.2, 3.0.3, 3.0.4 or 3.0.5.
 Upgrade both plugins to the latest release. Up to 3.0.3, each release of `local_moodeskpro`
-needs `local_moodesk` of the same release; `local_moodeskpro` 3.0.4 needs `local_moodesk` 3.0.3
-or later. 3.0.1 also changes how replies to notifications are threaded, 3.0.2 moves the alerts
+needs `local_moodesk` of the same release; `local_moodeskpro` 3.0.4 and 3.0.5 need
+`local_moodesk` 3.0.3 or later. 3.0.1 also changes how replies to notifications are threaded, 3.0.2 moves the alerts
 about rejected inbound email to the add-on, and 3.0.4 opens no ticket from email until a sender
 authentication profile is configured and delivers webhooks only to `https://` URLs; see the
 upgrade notes of [3.0.1](./changelog#upgrade-notes-3-0-1),

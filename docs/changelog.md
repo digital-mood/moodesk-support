@@ -17,6 +17,34 @@ The public changelog starts at **2.34.0**. Earlier releases are not listed here.
 
 <!-- Add new releases directly below this line, newest first, with the same headings. -->
 
+## 3.0.5 — 2026-11-24
+
+### Changed
+
+- **The `local_moodesk` package no longer includes the command-line script that created
+  demonstration tickets.** It was meant for test sites and was not part of the product. Upgrading
+  from the ZIP removes it from the site; nothing else depended on it.
+
+### Fixed
+
+- **Error messages from the ticket panel and saved views are translated.** When an action is
+  refused (no permission, an expired session, a request the server does not recognise) the
+  message now appears in the user's language instead of in English. An expired session shows
+  Moodle's own message.
+- **The *SLA warning only* filter finds every ticket in warning.** It used to look only at the
+  first 30 tickets of the view, so later tickets in warning were missing, the total was too low
+  and page 2 was empty. The filter now covers the whole view, with the right total and pages.
+- **Tickets created in the same second keep their place between pages** of the ticket list, so
+  none is shown twice or skipped.
+- **On Moodle 5.2 the sidebar remembers that you collapsed it.** The collapsed sidebar opened
+  again on every page; your choice is now kept, as it already was on earlier Moodle versions.
+
+### Upgrade notes {#upgrade-notes-3-0-5}
+
+- **Upgrading both plugins is recommended.** The fixes are in `local_moodesk` 3.0.5; the add-on
+  does not change, and `local_moodeskpro` 3.0.5 still works with `local_moodesk` 3.0.3 or later.
+  A site on Starter upgrades `local_moodesk` and needs nothing else.
+
 ## 3.0.4 — 2026-11-18
 
 ### Changed
